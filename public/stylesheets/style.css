@@ -1,0 +1,43 @@
+:root{
+    --background:#fbfaf4; --foreground:#26383c; --card:#ffffff;
+    --primary:#2c7c8c; --primary-foreground:#fdfcf7; --primary-soft:#e2eff1;
+    --accent-soft:#fbeedd; --accent-foreground:#4a3418;
+    --radius:1.25rem;
+    --gradient-header:linear-gradient(150deg,#31879a,#215e6e);
+    --shadow-card:0 8px 24px -12px rgba(30,60,70,.28);
+    --shadow-tile:0 6px 16px -8px rgba(30,60,70,.32);
+    --font-sans:"Nunito",ui-sans-serif,system-ui,sans-serif;
+    --font-display:"Baloo 2","Nunito",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font-sans);background:var(--background);color:var(--foreground);-webkit-tap-highlight-color:transparent}
+  h1,h2{font-family:var(--font-display)}
+  .app{max-width:28rem;margin:0 auto;min-height:100vh;padding-bottom:1.5rem}
+  @media(min-width:640px){.app{max-width:36rem}}
+
+  .header{background-image:var(--gradient-header);color:var(--primary-foreground);
+    padding:1.75rem 1.25rem 2rem;border-radius:0 0 2.5rem 2.5rem;box-shadow:var(--shadow-card)}
+  .brand{display:flex;align-items:center;gap:.75rem}
+  .brand-logo{width:3.5rem;height:3.5rem;flex:0 0 auto;display:grid;place-items:center;background:var(--card);border-radius:1rem;padding:.375rem}
+  .brand-logo img{width:100%;height:100%;object-fit:contain}
+  .brand-name{font-family:var(--font-display);font-size:1.25rem;font-weight:700;line-height:1.2}
+  .brand-sub{font-size:.875rem;font-weight:500;opacity:.85}
+  .welcome{margin-top:1.75rem}
+  .greeting{font-size:1rem;font-weight:500;opacity:.9}
+  .student{margin-top:.25rem;font-size:1.875rem;font-weight:700;letter-spacing:-.02em}
+  .badge{display:inline-flex;margin-top:.5rem;padding:.25rem .75rem;border-radius:9999px;background:rgba(255,255,255,.16);font-size:.875rem;font-weight:500}
+
+  .section{padding:1.5rem 1.25rem 3rem}
+  .section h2{font-size:1.125rem;font-weight:700;margin-bottom:1rem}
+  .card{background:var(--card);border-radius:calc(var(--radius) + 12px);box-shadow:var(--shadow-card);padding:1.25rem}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);column-gap:.5rem;row-gap:1.5rem}
+  @media(min-width:640px){.grid{grid-template-columns:repeat(4,1fr)}}
+  .tile{display:flex;flex-direction:column;align-items:center;gap:.5rem;background:none;border:0;cursor:pointer;
+    padding:.5rem;border-radius:1rem;font:inherit;color:inherit;transition:transform .15s}
+  .tile:active{transform:scale(.95)}
+  .tile-icon{width:68px;height:68px;display:grid;place-items:center;border-radius:9999px;
+    background:var(--primary-soft);color:var(--primary);box-shadow:var(--shadow-tile);transition:box-shadow .2s}
+  .tile:hover .tile-icon{box-shadow:0 10px 20px -8px rgba(30,60,70,.4)}
+  .tile[data-tone="accent"] .tile-icon{background:var(--accent-soft);color:var(--accent-foreground)}
+  .tile-icon svg{width:32px;height:32px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .tile-label{font-size:13px;font-weight:600;line-height:1.15;text-align:center}
