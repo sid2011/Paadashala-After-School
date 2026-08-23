@@ -29,8 +29,31 @@
 
   .section{padding:1.5rem 1.25rem 3rem}
   .section h2{font-size:1.125rem;font-weight:700;margin-bottom:1rem}
-  .card{background:var(--card);border-radius:calc(var(--radius) + 12px);box-shadow:var(--shadow-card);padding:1.25rem}
-  .grid{display:grid;grid-template-columns:repeat(3,1fr);column-gap:.5rem;row-gap:1.5rem}
+  .card {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 2rem;
+  box-shadow: 0 8px 24px -12px rgba(30, 60, 70, 0.28);
+  padding: 1.25rem;
+  display: block;
+}
+
+#quick-access {
+  width: 100%;
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem .5rem;
+  padding: 1.25rem;
+}
+
+#quick-access .tile {
+  position: static !important;
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
   @media(min-width:640px){.grid{grid-template-columns:repeat(4,1fr)}}
   .tile{display:flex;flex-direction:column;align-items:center;gap:.5rem;background:none;border:0;cursor:pointer;
     padding:.5rem;border-radius:1rem;font:inherit;color:inherit;transition:transform .15s}
@@ -41,3 +64,51 @@
   .tile[data-tone="accent"] .tile-icon{background:var(--accent-soft);color:var(--accent-foreground)}
   .tile-icon svg{width:32px;height:32px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
   .tile-label{font-size:13px;font-weight:600;line-height:1.15;text-align:center}
+  .tile-icon {
+  width: 68px !important;
+  height: 68px !important;
+  min-width: 68px;
+  min-height: 68px;
+
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50% !important;
+
+  background: #e2eff1 !important;
+  color: #2c7c8c !important;
+
+  box-shadow: 0 6px 16px -8px rgba(30,60,70,.32);
+}
+
+.tile-icon svg {
+  width: 32px !important;
+  height: 32px !important;
+
+  display: block !important;
+
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 1.8 !important;
+}
+.grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem .5rem;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.tile,
+.tile:hover,
+.tile:focus,
+.tile:active {
+  text-decoration: none;
+  color: inherit;
+}

@@ -2,7 +2,6 @@ const hbs = require("hbs");
 var createError = require("http-errors");
 var express = require("express");
 var path = require("path");
-var cookieParser = require("cookie-parser");
 const { engine } = require("express-handlebars");
 var logger = require("morgan");
 
@@ -23,7 +22,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.set("views", path.join(__dirname, "views"));
 
-app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 app.engine(
   "hbs",
