@@ -947,3 +947,218 @@ table.table { width: 100%; border-collapse: collapse; min-width: 760px; }
   .btn { width: 100%; }
   .toolbar .btn, .row-actions .btn, .form-actions .btn, .page-actions .btn { width: auto; }
 }
+.sidebar {
+    border-right: 2px solid #dfe5e7;
+}.topbar {
+    border-bottom: 2px solid #d9e2e5;
+}/* ================================
+   REGISTER STUDENT MODAL
+================================ */
+
+.modal-content {
+    border: none;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(30, 70, 80, 0.18);
+}
+
+/* Header */
+
+.modal-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 24px 28px 18px;
+    border-bottom: 1px solid #e8eef0;
+    background: #ffffff;
+}
+
+.modal-head h3 {
+    margin: 0;
+    font-family: "Baloo 2", sans-serif;
+    font-size: 25px;
+    font-weight: 700;
+    color: #26383c;
+}
+
+.modal-head p {
+    margin: 4px 0 0;
+    color: #7a8a8f;
+    font-size: 14px;
+}
+
+/* Body */
+
+.modal-body {
+    padding: 24px 28px;
+    background: #ffffff;
+}
+
+/* Form spacing */
+
+.form-mb {
+    margin-bottom: 18px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+/* Labels */
+
+.form-lbl {
+    display: block;
+    margin-bottom: 7px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #344b51;
+}
+
+.req {
+    color: #d95c5c;
+}
+
+/* Inputs */
+
+.finput {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #d7e2e5;
+    border-radius: 10px;
+    background: #fbfdfd;
+    color: #26383c;
+    font-family: "Nunito", sans-serif;
+    font-size: 14px;
+    padding: 11px 13px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.finput::placeholder {
+    color: #a5b1b5;
+}
+
+.finput:hover {
+    border-color: #b7cbd0;
+}
+
+.finput:focus {
+    border-color: #2c7c8c;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(44, 124, 140, 0.10);
+}
+
+/* Select */
+
+.fselect {
+    cursor: pointer;
+    appearance: auto;
+}
+
+/* Textarea */
+
+textarea.finput {
+    min-height: 90px;
+    resize: vertical;
+}
+
+/* Information box */
+
+.xp-hint-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #eef7f8;
+    border: 1px solid #d8ebee;
+    color: #527078;
+    font-size: 13px;
+}
+
+.xp-hint-box strong {
+    color: #1d6473;
+}
+
+/* Footer */
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 18px 28px 22px;
+    border-top: 1px solid #e8eef0;
+    background: #fbfcfc;
+}
+
+/* Buttons */
+
+.modal-footer .btn {
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-family: "Nunito", sans-serif;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+}
+
+.modal-footer .btn-primary {
+    background: #2c7c8c;
+    color: white;
+}
+
+.modal-footer .btn-primary:hover {
+    background: #246b79;
+}
+
+.modal-footer .btn-secondary {
+    background: #edf1f2;
+    color: #52666c;
+}
+
+.modal-footer .btn-secondary:hover {
+    background: #e1e7e9;
+}
+
+/* Close button */
+
+.modal-head .btn-close {
+    border: none;
+    background: transparent;
+    font-size: 20px;
+    cursor: pointer;
+    opacity: 0.55;
+}
+
+.modal-head .btn-close:hover {
+    opacity: 1;
+}
+
+/* Mobile */
+
+@media (max-width: 650px) {
+
+    .modal-dialog {
+        margin: 12px;
+    }
+
+    .modal-head,
+    .modal-body,
+    .modal-footer {
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .modal-head h3 {
+        font-size: 22px;
+    }
+
+}
