@@ -41,11 +41,6 @@ app.engine(
 },
   }),
 );
-db.connect().then(() => {
-  app.listen(3001, () => {
-    console.log("Server running");
-  });
-});
 app.set("view engine", "hbs");
 
 app.use("/", indexRouter);

@@ -5,13 +5,9 @@
  */
 
 var app = require('../app');
+var db = require('../config/connections');
 var debug = require('debug')('paadashala-after-school:server');
 var http = require('http');
-
-/**
- * Get port from environment and store in Express.
- */
-
 var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 
@@ -24,11 +20,16 @@ var server = http.createServer(app);
 /**
  * Listen on provided port, on all network interfaces.
  */
-
-server.listen(port);
-server.on('error', onError);
-server.on('listening', onListening);
-
+db.connect()
+  .then(() => {
+    server.listen(port);
+    server.on('error', onError);
+    server.on('listening', onListening);
+  })
+  .catch((error) => {
+    console.error("Failed to connect to MongoDB:", error);
+    process.exit(1);
+  });
 /**
  * Normalize a port into a number, string, or false.
  */
