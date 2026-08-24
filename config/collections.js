@@ -1,4 +1,5 @@
 module.exports={
     STUDENT_COLLECTION:'students',
-    ADMIN_COLLECTION:'admin'
+    ADMIN_COLLECTION:'admin',
+    TEACHER_COLLECTION:'teachers',
 }
