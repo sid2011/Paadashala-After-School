@@ -4,7 +4,7 @@ var express = require("express");
 var path = require("path");
 const { engine } = require("express-handlebars");
 var logger = require("morgan");
-
+const db = require("./config/connections");
 
 
 var indexRouter = require("./routes/index");
@@ -41,6 +41,11 @@ app.engine(
 },
   }),
 );
+db.connect().then(() => {
+  app.listen(3001, () => {
+    console.log("Server running");
+  });
+});
 app.set("view engine", "hbs");
 
 app.use("/", indexRouter);
