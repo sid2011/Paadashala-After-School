@@ -48,4 +48,13 @@ router.post('/teachers/register',async(req,res)=>{
 router.get('/students/attendance',async(req,res)=>{
     res.render('admin/attendance',{layout:false})
 })
+router.post('/students/attendance',async(req,res)=>{
+     try {
+         console.log(" ATTENDANCE ROUTE HIT");
+        console.log("BODY:", req.body);
+  await db.get().collection(collections.STUDENT_ATTENDANCE_COLLECTION).insertMany(req.body);
+    } catch (err) {
+        console.log(err);
+    }
+})
 module.exports = router;

@@ -53,4 +53,31 @@ document.addEventListener("click", async function (e) {
         button.classList.add("btn-danger");
     }
 
-});
+});document.addEventListener("click",async(e)=>{
+ if (e.target.id !== "saveAttendance") return;
+ console.log("🔥 SAVE BUTTON CLICKED");
+ const rows = document.querySelectorAll("#attendanceTableBody tr");
+ const date = document.querySelector("#attendanceDate").value;
+    const attendance = [];
+
+    rows.forEach((row) => {
+        attendance.push({
+            date,
+            studentId: row.dataset.studentId,
+            status: row.dataset.status
+        });
+    });
+try{
+const response=await fetch('/admin/students/attendance',{method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(attendance)
+})
+if (!response.ok) {
+        throw new Error(`Failed to save attendance: ${response.status}`);
+    }
+
+console.log("Updated successfully")
+}catch(err){
+console.log("ATTENDANCE ERROR:",err)
+}
+})
