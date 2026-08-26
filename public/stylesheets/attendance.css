@@ -1,0 +1,181 @@
+/* Paadashala Admin — Attendance page styles
+   Uses the existing admin CSS variables when available, with safe fallbacks. */
+
+:root {
+  --pds-primary: var(--primary-color, #2b57d6);
+  --pds-primary-soft: rgba(43, 87, 214, 0.08);
+  --pds-success: var(--success-color, #18a558);
+  --pds-danger: var(--danger-color, #e04141);
+  --pds-muted: var(--muted-color, #6b7280);
+  --pds-border: var(--border-color, #e6e9f0);
+  --pds-card-radius: 14px;
+}
+
+.attendance-page .page-title {
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.attendance-page .page-subtitle {
+  color: var(--pds-muted);
+  font-size: 0.925rem;
+  margin-bottom: 0;
+}
+
+.attendance-page .pds-card {
+  background: #fff;
+  border: 1px solid var(--pds-border);
+  border-radius: var(--pds-card-radius);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 6px 18px rgba(16, 24, 40, 0.04);
+}
+
+.attendance-page .pds-card-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--pds-border);
+  font-weight: 600;
+}
+
+.attendance-page .pds-card-body {
+  padding: 20px;
+}
+
+/* Summary cards */
+.summary-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  height: 100%;
+}
+
+.summary-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 1.05rem;
+  flex: 0 0 auto;
+}
+
+.summary-icon.is-total {
+  background: var(--pds-primary-soft);
+  color: var(--pds-primary);
+}
+.summary-icon.is-present {
+  background: rgba(24, 165, 88, 0.1);
+  color: var(--pds-success);
+}
+.summary-icon.is-absent {
+  background: rgba(224, 65, 65, 0.1);
+  color: var(--pds-danger);
+}
+.summary-icon.is-rate {
+  background: rgba(240, 165, 0, 0.12);
+  color: #b57d00;
+}
+
+.summary-label {
+  font-size: 0.8rem;
+  color: var(--pds-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+}
+
+.summary-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+  margin: 0;
+}
+
+/* Attendance table */
+.attendance-table {
+  margin-bottom: 0;
+}
+
+.attendance-table thead th {
+  background: #f7f8fb;
+  color: var(--pds-muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 600;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--pds-border);
+}
+
+.attendance-table tbody td {
+  vertical-align: middle;
+}
+
+.attendance-table tbody tr.is-absent {
+  background: rgba(224, 65, 65, 0.035);
+}
+
+.student-name {
+  font-weight: 600;
+}
+
+.student-id {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85rem;
+  color: var(--pds-muted);
+}
+
+/* Status toggle buttons */
+.status-toggle .btn {
+  min-width: 92px;
+  font-size: 0.83rem;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+.status-toggle .btn-status-present {
+  color: var(--pds-success);
+  border-color: rgba(24, 165, 88, 0.4);
+  background: #fff;
+}
+.status-toggle .btn-status-present.active {
+  background: var(--pds-success);
+  border-color: var(--pds-success);
+  color: #fff;
+}
+
+.status-toggle .btn-status-absent {
+  color: var(--pds-danger);
+  border-color: rgba(224, 65, 65, 0.4);
+  background: #fff;
+}
+.status-toggle .btn-status-absent.active {
+  background: var(--pds-danger);
+  border-color: var(--pds-danger);
+  color: #fff;
+}
+
+/* Empty / loading states */
+.table-state {
+  padding: 44px 16px;
+  text-align: center;
+  color: var(--pds-muted);
+}
+
+.table-state .state-title {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+@media (max-width: 575.98px) {
+  .attendance-page .pds-card-body {
+    padding: 16px;
+  }
+  .status-toggle .btn {
+    min-width: 78px;
+  }
+}
+.attendance-table th,
+.attendance-table td {
+    border: 1px solid #dee2e6;
+}

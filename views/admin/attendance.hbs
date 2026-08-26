@@ -1,0 +1,173 @@
+<div class="attendance-page container-fluid py-4">
+
+  <!-- Page heading -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+      <h1 class="page-title">Attendance</h1>
+      <p class="page-subtitle">Manage daily student attendance</p>
+    </div>
+  </div>
+
+  <!-- 1. Top controls -->
+  <div class="pds-card mb-4">
+    <div class="pds-card-body">
+      <div class="row g-3 align-items-end">
+        <div class="col-12 col-md-4 col-lg-3">
+          <label class="form-label fw-semibold" for="attendanceDate">Date</label>
+          <input type="date" class="form-control" id="attendanceDate" value="2026-08-26" />
+        </div>
+        <div class="col-12 col-md-4 col-lg-3">
+          <label class="form-label fw-semibold" for="classSelect">Class</label>
+          <select class="form-select" id="classSelect">
+            <option value="Class 6">Class 6</option>
+            <option value="Class 7">Class 7</option>
+            <option value="Class 8" selected>Class 8</option>
+            <option value="Class 9">Class 9</option>
+            <option value="Class 10">Class 10</option>
+          </select>
+        </div>
+        <div class="col-12 col-lg-3">
+          <button type="button" class="btn btn-primary w-100" id="loadStudentsBtn">Load Students</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="attendanceTableWrapper">
+      <div class="table-responsive">
+    <table class="table table-hover align-middle attendance-table">
+        <thead>
+            <tr>
+                <th style="width: 64px;">No</th>
+                <th>Student ID</th>
+                <th>Student Name</th>
+                <th>Class</th>
+                <th style="width: 210px;">Status</th>
+            </tr>
+        </thead>
+
+        <tbody id="attendanceTableBody">
+
+            <tr data-student-id="STU1001" data-student-name="Rahul" data-status="present">
+                <td class="row-index">1</td>
+                <td><span class="student-id">STU1001</span></td>
+                <td><span class="student-name">Rahul</span></td>
+                <td>Class 8</td>
+                <td>
+                    <div class="btn-group status-toggle" role="group" aria-label="Attendance status for Rahul">
+
+                        <button type="button"
+                                class="btn btn-sm btn-outline-success text-dark"
+                                data-status="present">
+                            Present
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-sm btn-outline-danger text-dark"
+                                data-status="absent">
+                            Absent
+                        </button>
+
+                    </div>
+                </td>
+            </tr>
+
+            <tr data-student-id="STU1002" data-student-name="Arjun" data-status="absent">
+                <td class="row-index">2</td>
+                <td><span class="student-id">STU1002</span></td>
+                <td><span class="student-name">Arjun</span></td>
+                <td>Class 8</td>
+                <td>
+                    <div class="btn-group status-toggle" role="group" aria-label="Attendance status for Arjun">
+
+                        <button type="button"
+                                class="btn btn-sm btn-outline-success text-dark"
+                                data-status="present">
+                            Present
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-sm btn-outline-danger text-dark"
+                                data-status="absent">
+                            Absent
+                        </button>
+
+                    </div>
+                </td>
+            </tr>
+
+            <tr data-student-id="STU1003" data-student-name="Anu" data-status="present">
+                <td class="row-index">3</td>
+                <td><span class="student-id">STU1003</span></td>
+                <td><span class="student-name">Anu</span></td>
+                <td>Class 8</td>
+                <td>
+                    <div class="btn-group status-toggle" role="group" aria-label="Attendance status for Anu">
+
+                        <button type="button"
+                                class="btn btn-sm btn-outline-success text-dark"
+                                data-status="present">
+                            Present
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-sm btn-outline-danger text-dark"
+                                data-status="absent">
+                            Absent
+                        </button>
+
+                    </div>
+                </td>
+            </tr>
+
+            <tr data-student-id="STU1004" data-student-name="Adithya" data-status="present">
+                <td class="row-index">4</td>
+                <td><span class="student-id">STU1004</span></td>
+                <td><span class="student-name">Adithya</span></td>
+                <td>Class 8</td>
+                <td>
+                    <div class="btn-group status-toggle" role="group" aria-label="Attendance status for Adithya">
+
+                        <button type="button"
+                                class="btn btn-sm btn-outline-success text-dark"
+                                data-status="present">
+                            Present
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-sm btn-outline-danger text-dark"
+                                data-status="absent">
+                            Absent
+                        </button>
+
+                    </div>
+                </td>
+            </tr>
+
+            <tr data-student-id="STU1005" data-student-name="Meera" data-status="absent">
+                <td class="row-index">5</td>
+                <td><span class="student-id">STU1005</span></td>
+                <td><span class="student-name">Meera</span></td>
+                <td>Class 8</td>
+                <td>
+                    <div class="btn-group status-toggle" role="group" aria-label="Attendance status for Meera">
+
+                        <button type="button"
+                                class="btn btn-sm btn-outline-success text-dark"
+                                data-status="present">
+                            Present
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-sm btn-outline-danger text-dark"
+                                data-status="absent">
+                            Absent
+                        </button>
+
+                    </div>
+                </td>
+            </tr>
+
+        </tbody>
+    </table>
+</div>
+<button type="button" class="btn btn-primary">Update</button>

@@ -1161,4 +1161,49 @@ textarea.finput {
         font-size: 22px;
     }
 
+}.teachers-container {
+    width: 100%;
+}
+
+.teachers-container h1 {
+    margin-bottom: 20px;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    background: white;
+}
+
+.teachers-table {
+    width: 100%;
+    margin: 0 !important;
+    border-collapse: collapse;
+}
+
+.teachers-table th,
+.teachers-table td {
+    padding: 14px 16px;
+    border: 1px solid #ddd;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.teachers-table thead th {
+    background: #f5f7fa;
+    font-weight: 700;
+    color: #333;
+}
+
+.teachers-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.teachers-table tbody td,
+.teachers-table tbody th {
+    color: #555;
 }

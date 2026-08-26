@@ -125,20 +125,33 @@
 
                     <!-- SUBJECT -->
 
-                    <div class="form-mb">
+                    <label class="form-lbl">
+        Subject <span class="req">*</span>
+    </label>
 
-                        <label class="form-lbl">
-                            Subject <span class="req">*</span>
-                        </label>
+    <select
+        class="finput"
+        name="subject"
+        required>
 
-                        <input
-                            class="finput"
-                            type="text"
-                            name="subject"
-                            placeholder="Enter subject taught"
-                            required>
+        <option value="" disabled selected>
+            Select subject
+        </option>
 
-                    </div>
+        <option value="Mathematics">Mathematics</option>
+        <option value="English">English</option>
+        <option value="Malayalam">Malayalam</option>
+        <option value="Hindi">Hindi</option>
+        <option value="Science">Science</option>
+        <option value="Social Science">Social Science</option>
+        <option value="EVS">EVS</option>
+        <option value="Computer Science">Computer Science</option>
+        <option value="Physics">Physics</option>
+        <option value="Chemistry">Chemistry</option>
+        <option value="Biology">Biology</option>
+        <option value="Other">Other</option>
+
+    </select>
 
 
                     <!-- ADDRESS -->
@@ -205,6 +218,47 @@
 
         </div>
 
+    </div>
+
+</div>
+<div class="teachers-container">
+
+    <h1>Teachers</h1>
+
+    <div class="table-wrapper">
+        <table class="table teachers-table mt-3">
+
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Teacher Id</th>
+                    <th>Name</th>
+                    <th>Phone no</th>
+                    <th>Email</th>
+                    <th>Subject</th>
+                    <th>Address</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {{#each teacher}}
+
+                <tr>
+                    <th scope="row">{{inc @index}}</th>
+                    <td>{{this.teacherId}}</td>
+                    <td>{{this.name}}</td>
+                    <td>{{this.phoneNo}}</td>
+                    <td>{{this.email}}</td>
+                    <td>{{this.subject}}</td>
+                    <td>{{this.address}}</td>
+                </tr>
+
+                {{/each}}
+
+            </tbody>
+
+        </table>
     </div>
 
 </div>
