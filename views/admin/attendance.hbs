@@ -1,24 +1,43 @@
-<div class="attendance-page container-fluid py-4">
+<div class="attendance-page p-3 p-md-4">
 
   <!-- Page heading -->
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
     <div>
-      <h1 class="page-title">Attendance</h1>
-      <p class="page-subtitle">Manage daily student attendance</p>
+      <h1 class="page-title m-0">Student Attendance</h1>
+      <p class="text-muted m-0">വിദ്യാർത്ഥികളുടെ ദിവസേനയുള്ള ഹാജർ രേഖപ്പെടുത്തൽ</p>
+    </div>
+    <div id="attendanceAlert" style="display: none;" class="alert alert-success py-2 px-3 m-0 small">
+      <i class="bi bi-check-circle-fill me-1"></i> Attendance saved successfully!
     </div>
   </div>
 
-  <!-- 1. Top controls -->
-  <div class="pds-card mb-4">
-    <div class="pds-card-body">
+  <!-- 1. Top controls & Filter Card -->
+  <div class="dash-card mb-4">
+    <div class="dash-card-header">
+      <h3 class="dash-card-title">
+        <i class="bi bi-funnel-fill text-primary me-2"></i> Select Class & Shift
+      </h3>
+      <span class="text-muted small">ഹാജർ എടുക്കേണ്ട ക്ലാസ്സും സമയവും തെരഞ്ഞെടുക്കുക</span>
+    </div>
+    <div class="dash-card-body">
       <div class="row g-3 align-items-end">
-        <div class="col-12 col-md-4 col-lg-3">
-          <label class="form-label fw-semibold" for="attendanceDate">Date</label>
-          <input type="date" class="form-control" id="attendanceDate" value="2026-08-26" />
+        <div class="col-12 col-md-3">
+          <label class="form-label fw-semibold text-secondary small" for="attendanceDate">
+            <i class="bi bi-calendar3 me-1"></i> Date
+          </label>
+          <input type="date" class="form-control" id="attendanceDate" />
         </div>
-        <div class="col-12 col-md-4 col-lg-3">
-          <label class="form-label fw-semibold" for="classSelect">Class</label>
+
+        <div class="col-12 col-md-3">
+          <label class="form-label fw-semibold text-secondary small" for="classSelect">
+            <i class="bi bi-mortarboard me-1"></i> Class
+          </label>
           <select class="form-select" id="classSelect">
+            <option value="Class 1">Class 1</option>
+            <option value="Class 2">Class 2</option>
+            <option value="Class 3">Class 3</option>
+            <option value="Class 4">Class 4</option>
+            <option value="Class 5">Class 5</option>
             <option value="Class 6">Class 6</option>
             <option value="Class 7">Class 7</option>
             <option value="Class 8" selected>Class 8</option>
@@ -26,148 +45,86 @@
             <option value="Class 10">Class 10</option>
           </select>
         </div>
-        <div class="col-12 col-lg-3">
-          <button type="button" class="btn btn-primary w-100" id="loadStudentsBtn">Load Students</button>
+
+        <div class="col-12 col-md-3">
+          <label class="form-label fw-semibold text-secondary small" for="shiftSelect">
+            <i class="bi bi-clock-history me-1"></i> Batch / Shift
+          </label>
+          <select class="form-select" id="shiftSelect">
+            <option value="all">All Shifts (എല്ലാ ബാച്ചുകളും)</option>
+            <option value="Morning">Morning Shift (രാവിലെ)</option>
+            <option value="Afternoon">Afternoon Shift (ഉച്ചയ്ക്ക്)</option>
+            <option value="Evening">Evening Shift (വൈകുന്നേരം)</option>
+          </select>
+        </div>
+
+        <div class="col-12 col-md-3">
+          <button type="button" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2" id="loadStudentsBtn">
+            <i class="bi bi-arrow-clockwise"></i>
+            <span>Load Students</span>
+          </button>
         </div>
       </div>
     </div>
   </div>
-  <div id="attendanceTableWrapper">
+
+  <!-- Attendance Table Card -->
+  <div class="dash-card mb-4" id="attendanceTableCard">
+    <div class="dash-card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <div>
+        <h3 class="dash-card-title">
+          <i class="bi bi-card-checklist text-primary me-2"></i> Attendance Marking
+        </h3>
+        <span class="text-muted small" id="loadedSummary">Click "Load Students" to fetch batch</span>
+      </div>
+
+      <div class="d-flex align-items-center gap-2">
+        <button type="button" class="btn btn-sm btn-outline-success" id="markAllPresentBtn">
+          <i class="bi bi-check-all"></i> Mark All Present
+        </button>
+        <button type="button" class="btn btn-sm btn-outline-danger" id="markAllAbsentBtn">
+          <i class="bi bi-x"></i> Mark All Absent
+        </button>
+      </div>
+    </div>
+
+    <div class="dash-card-body p-0">
       <div class="table-responsive">
-    <table class="table table-hover align-middle attendance-table">
-        <thead>
+        <table class="table align-middle table-hover mb-0 attendance-table">
+          <thead>
             <tr>
-                <th style="width: 64px;">No</th>
-                <th>Student ID</th>
-                <th>Student Name</th>
-                <th>Class</th>
-                <th style="width: 210px;">Status</th>
+              <th style="width: 50px;">No</th>
+              <th>Student ID</th>
+              <th>Student Name</th>
+              <th>Class</th>
+              <th>Batch / Shift</th>
+              <th style="width: 220px;" class="text-center">Status</th>
             </tr>
-        </thead>
+          </thead>
 
-        <tbody id="attendanceTableBody">
-
-            <tr data-student-id="STU1001" data-student-name="Rahul" data-status="present">
-                <td class="row-index">1</td>
-                <td><span class="student-id">STU1001</span></td>
-                <td><span class="student-name">Rahul</span></td>
-                <td>Class 8</td>
-                <td>
-                    <div class="btn-group status-toggle" role="group" aria-label="Attendance status for Rahul">
-
-                        <button type="button"
-                                class="btn btn-sm btn-outline-success text-dark"
-                                data-status="present">
-                            Present
-                        </button>
-
-                        <button type="button"
-                                class="btn btn-sm btn-outline-danger text-dark"
-                                data-status="absent">
-                            Absent
-                        </button>
-
-                    </div>
-                </td>
+          <tbody id="attendanceTableBody">
+            <tr>
+              <td colspan="6" class="text-center py-5 text-muted">
+                <i class="bi bi-people fs-1 text-secondary d-block mb-2"></i>
+                <div>ക്ലാസ്സും ഷിഫ്റ്റും സെലക്ട് ചെയ്ത ശേഷം <strong>Load Students</strong> ക്ലിക്ക് ചെയ്യുക.</div>
+              </td>
             </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-            <tr data-student-id="STU1002" data-student-name="Arjun" data-status="absent">
-                <td class="row-index">2</td>
-                <td><span class="student-id">STU1002</span></td>
-                <td><span class="student-name">Arjun</span></td>
-                <td>Class 8</td>
-                <td>
-                    <div class="btn-group status-toggle" role="group" aria-label="Attendance status for Arjun">
+    <div class="dash-card-footer p-3 bg-light border-top d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div class="text-muted small">
+        <span id="presentCountBadge" class="badge bg-success-subtle text-success me-2">Present: 0</span>
+        <span id="absentCountBadge" class="badge bg-danger-subtle text-danger">Absent: 0</span>
+      </div>
 
-                        <button type="button"
-                                class="btn btn-sm btn-outline-success text-dark"
-                                data-status="present">
-                            Present
-                        </button>
+      <button id="saveAttendance" type="button" class="btn btn-primary px-4 d-flex align-items-center gap-2">
+        <i class="bi bi-cloud-arrow-up-fill"></i>
+        <span>Save Attendance</span>
+      </button>
+    </div>
+  </div>
 
-                        <button type="button"
-                                class="btn btn-sm btn-outline-danger text-dark"
-                                data-status="absent">
-                            Absent
-                        </button>
-
-                    </div>
-                </td>
-            </tr>
-
-            <tr data-student-id="STU1003" data-student-name="Anu" data-status="present">
-                <td class="row-index">3</td>
-                <td><span class="student-id">STU1003</span></td>
-                <td><span class="student-name">Anu</span></td>
-                <td>Class 8</td>
-                <td>
-                    <div class="btn-group status-toggle" role="group" aria-label="Attendance status for Anu">
-
-                        <button type="button"
-                                class="btn btn-sm btn-outline-success text-dark"
-                                data-status="present">
-                            Present
-                        </button>
-
-                        <button type="button"
-                                class="btn btn-sm btn-outline-danger text-dark"
-                                data-status="absent">
-                            Absent
-                        </button>
-
-                    </div>
-                </td>
-            </tr>
-
-            <tr data-student-id="STU1004" data-student-name="Adithya" data-status="present">
-                <td class="row-index">4</td>
-                <td><span class="student-id">STU1004</span></td>
-                <td><span class="student-name">Adithya</span></td>
-                <td>Class 8</td>
-                <td>
-                    <div class="btn-group status-toggle" role="group" aria-label="Attendance status for Adithya">
-
-                        <button type="button"
-                                class="btn btn-sm btn-outline-success text-dark"
-                                data-status="present">
-                            Present
-                        </button>
-
-                        <button type="button"
-                                class="btn btn-sm btn-outline-danger text-dark"
-                                data-status="absent">
-                            Absent
-                        </button>
-
-                    </div>
-                </td>
-            </tr>
-
-            <tr data-student-id="STU1005" data-student-name="Meera" data-status="absent">
-                <td class="row-index">5</td>
-                <td><span class="student-id">STU1005</span></td>
-                <td><span class="student-name">Meera</span></td>
-                <td>Class 8</td>
-                <td>
-                    <div class="btn-group status-toggle" role="group" aria-label="Attendance status for Meera">
-
-                        <button type="button"
-                                class="btn btn-sm btn-outline-success text-dark"
-                                data-status="present">
-                            Present
-                        </button>
-
-                        <button type="button"
-                                class="btn btn-sm btn-outline-danger text-dark"
-                                data-status="absent">
-                            Absent
-                        </button>
-
-                    </div>
-                </td>
-            </tr>
-
-        </tbody>
-    </table>
 </div>
-<button id="saveAttendance" type="button" class="btn btn-primary">Update</button>

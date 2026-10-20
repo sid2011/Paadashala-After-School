@@ -12,6 +12,7 @@
     "dotenv": "^17.4.2",
     "express": "^4.22.2",
     "express-handlebars": "^8.0.1",
+    "express-session": "^1.19.0",
     "hbs": "^4.2.1",
     "mongodb": "^7.5.0",
     "morgan": "^1.11.0",
