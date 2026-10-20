@@ -3,5 +3,7 @@ module.exports = {
     ADMIN_COLLECTION: 'admin',
     TEACHER_COLLECTION: 'teachers',
     STUDENT_ATTENDANCE_COLLECTION: 'stds-attendance',
-    TEACHER_OPINION_COLLECTION: 'teacher-opinions'
+    TEACHER_OPINION_COLLECTION: 'teacher-opinions',
+    ANNOUNCEMENT_COLLECTION: 'announcements',
+    PARENT_COLLECTION: 'parents'
 };

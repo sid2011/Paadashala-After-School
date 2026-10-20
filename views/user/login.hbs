@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Paadashala — Parent Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="/stylesheets/style.css">
+  <style>
+    body {
+      background: #f4f8f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 1rem;
+    }
+    .login-container {
+      width: 100%;
+      max-width: 400px;
+      background: #ffffff;
+      border-radius: 1.5rem;
+      box-shadow: 0 10px 30px -10px rgba(44, 124, 140, 0.25);
+      overflow: hidden;
+      border: 1px solid rgba(44, 124, 140, 0.1);
+    }
+    .login-header {
+      background: linear-gradient(150deg, #31879a, #215e6e);
+      color: #ffffff;
+      padding: 2rem 1.5rem 1.75rem;
+      text-align: center;
+    }
+    .login-body {
+      padding: 1.75rem 1.5rem;
+    }
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+    .form-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #475569;
+      margin-bottom: 0.4rem;
+    }
+    .form-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 0.75rem;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-input:focus {
+      border-color: #2c7c8c;
+      box-shadow: 0 0 0 3px rgba(44, 124, 140, 0.18);
+    }
+    .btn-login {
+      width: 100%;
+      background: #2c7c8c;
+      color: #ffffff;
+      border: none;
+      border-radius: 0.75rem;
+      padding: 0.85rem;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 12px rgba(44, 124, 140, 0.3);
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-login:active {
+      transform: scale(0.98);
+    }
+    .demo-box {
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 0.75rem;
+      padding: 0.85rem;
+      margin-top: 1.5rem;
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-container">
+    <div class="login-header">
+      <div style="width: 52px; height: 52px; border-radius: 14px; background: rgba(255,255,255,0.18); display: inline-flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 0.75rem;">
+        <i class="bi bi-mortarboard-fill"></i>
+      </div>
+      <h2 style="font-size: 1.4rem; font-weight: 700; margin: 0;">Paadashala</h2>
+      <p style="font-size: 0.85rem; opacity: 0.9; margin: 0.2rem 0 0;">After School — Parent Portal</p>
+    </div>
+
+    <div class="login-body">
+      {{#if error}}
+        <div style="background: #fee2e2; border-left: 4px solid #ef4444; color: #991b1b; padding: 0.75rem; border-radius: 0.5rem; font-size: 0.85rem; margin-bottom: 1.25rem;">
+          <i class="bi bi-exclamation-triangle-fill me-1"></i> {{error}}
+        </div>
+      {{/if}}
+
+      <form action="/login" method="POST">
+        <div class="form-group">
+          <label class="form-label" for="phoneOrId">
+            <i class="bi bi-telephone-fill me-1" style="color: #2c7c8c;"></i> Phone Number or Student ID
+          </label>
+          <input
+            type="text"
+            id="phoneOrId"
+            name="phoneOrId"
+            class="form-input"
+            placeholder="e.g. 9876543210 or PAD1024"
+            required
+            value="{{#if defaultPhone}}{{defaultPhone}}{{/if}}" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">
+            <i class="bi bi-lock-fill me-1" style="color: #2c7c8c;"></i> Password
+          </label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            class="form-input"
+            placeholder="Enter your password"
+            required />
+        </div>
+
+        <button type="submit" class="btn-login" style="margin-top: 1.5rem;">
+          <span>Login to Portal</span>
+          <i class="bi bi-arrow-right"></i>
+        </button>
+      </form>
+
+      <div class="demo-box">
+        <strong style="display: block; color: #334155; margin-bottom: 0.25rem;">
+          <i class="bi bi-info-circle-fill me-1" style="color: #2c7c8c;"></i> Demo Parent Login:
+        </strong>
+        <div>Phone: <strong>9876543210</strong> (Sidharth B)</div>
+        <div>Password: <strong>parent123</strong></div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

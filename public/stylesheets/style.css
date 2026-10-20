@@ -112,3 +112,305 @@
   text-decoration: none;
   color: inherit;
 }
+
+/* ============================================================
+   SUB-PAGE & MODULE COMMON STYLES
+   ============================================================ */
+.subpage-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  padding: 0.4rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  backdrop-filter: blur(4px);
+  transition: background 0.15s ease;
+}
+
+.back-btn:hover {
+  background: rgba(255, 255, 255, 0.35);
+  color: #ffffff;
+}
+
+.card-box {
+  background: #ffffff;
+  border-radius: 1.25rem;
+  padding: 1.25rem;
+  box-shadow: var(--shadow-card);
+  margin-bottom: 1.25rem;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.card-box-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.card-box-title {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--foreground);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Info Grid in Profile */
+.info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.925rem;
+}
+
+.info-item .label {
+  color: #64748b;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.info-item .val {
+  color: #1e293b;
+  font-weight: 700;
+  text-align: right;
+}
+
+/* Teacher Connected Card */
+.teacher-banner {
+  background: linear-gradient(135deg, #eef7f8, #e0f2f1);
+  border: 1.5px solid #b2dfdb;
+  border-radius: 1.25rem;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.teacher-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(44, 124, 140, 0.25);
+}
+
+.teacher-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.teacher-details h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #134e4a;
+  margin-bottom: 0.15rem;
+}
+
+.teacher-details p {
+  font-size: 0.8rem;
+  color: #0f766e;
+  margin: 0;
+}
+
+/* Notice / Announcements Feed */
+.notice-item {
+  background: #ffffff;
+  border-radius: 1rem;
+  padding: 1.1rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid var(--primary);
+  box-shadow: var(--shadow-tile);
+}
+
+.notice-item.urgent {
+  border-left-color: #ef4444;
+  background: #fffafa;
+}
+
+.notice-item.holiday {
+  border-left-color: #f59e0b;
+  background: #fffdf5;
+}
+
+.notice-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.notice-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.notice-body {
+  font-size: 0.875rem;
+  color: #334155;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+/* Attendance Stats */
+.attendance-meter-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: #ffffff;
+  border-radius: 1.25rem;
+  padding: 1.25rem;
+  box-shadow: var(--shadow-card);
+  margin-bottom: 1.25rem;
+  text-align: center;
+}
+
+.percent-ring {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: conic-gradient(#2c7c8c var(--percent, 80%), #e2eff1 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(44, 124, 140, 0.2);
+}
+
+.percent-inner {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.percent-inner strong {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--primary);
+  line-height: 1;
+}
+
+.percent-inner small {
+  font-size: 0.65rem;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.stat-pill {
+  padding: 0.5rem 0.85rem;
+  border-radius: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-pill.p-green {
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.stat-pill.p-red {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.attendance-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.attendance-row:last-child {
+  border-bottom: none;
+}
+
+.att-status-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  text-transform: capitalize;
+}
+
+.att-status-badge.present {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.att-status-badge.absent {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Audio Player Button in Teacher Opinions */
+.listen-voice-btn {
+  background: #e0f2fe;
+  color: #0284c7;
+  border: 1px solid #bae6fd;
+  border-radius: 9999px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.2s ease;
+}
+
+.listen-voice-btn:hover {
+  background: #0284c7;
+  color: #ffffff;
+}
+
+.opinion-bubble {
+  background: #f8fafc;
+  border-radius: 1rem;
+  padding: 1rem;
+  margin-top: 0.65rem;
+  font-size: 0.9rem;
+  color: #334155;
+  line-height: 1.5;
+  border-left: 3px solid #0284c7;
+}

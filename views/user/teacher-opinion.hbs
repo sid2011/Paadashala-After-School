@@ -1,0 +1,134 @@
+<main class="app">
+
+  <header class="header" style="padding-bottom: 1.5rem;">
+    <div class="subpage-header">
+      <a href="/" class="back-btn">
+        <i class="bi bi-chevron-left"></i> Back
+      </a>
+      <p class="brand-name" style="margin: 0; font-size: 1.1rem; color: #fff;">Teacher Opinions</p>
+      <div style="width: 60px;"></div>
+    </div>
+
+    <div style="margin-top: 1rem;">
+      <h1 style="font-size: 1.5rem; color: #fff; margin: 0; line-height: 1.2;">
+        {{#if student.name}}{{student.name}}{{else}}Sidharth{{/if}}'s Feedback
+      </h1>
+      <p style="color: rgba(255,255,255,0.85); font-size: 0.85rem; margin: 0.25rem 0 0;">
+        അധ്യാപകരുടെ വിലയിരുത്തലുകളും പുരോഗതിയും
+      </p>
+    </div>
+  </header>
+
+  <section class="section" style="padding-top: 1.25rem;">
+
+    <!-- SUMMARY HEADER -->
+    <div class="card-box" style="margin-bottom: 1rem;">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div>
+          <strong style="display: block; font-size: 1rem; color: #0f172a;">Mentor Observations</strong>
+          <small style="color: #64748b;">Subject-wise feedback & encouragement</small>
+        </div>
+        <span class="badge" style="background: #f3e8ff; color: #9333ea; font-size: 0.8rem; font-weight: 700;">
+          {{opinions.length}} Notes
+        </span>
+      </div>
+    </div>
+
+    <!-- OPINIONS LIST -->
+    {{#if opinions.length}}
+      <div>
+        {{#each opinions}}
+          <div class="card-box">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.5rem;">
+              <div style="display: flex; align-items: center; gap: 0.65rem;">
+                <div style="width: 40px; height: 40px; border-radius: 50%; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;">
+                  <i class="bi bi-person-circle"></i>
+                </div>
+                <div>
+                  <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: #1e293b;">
+                    {{this.teacherName}}
+                  </h4>
+                  <span class="badge" style="background: #e2eff1; color: var(--primary); font-size: 0.72rem; padding: 0.15rem 0.5rem; font-weight: 600;">
+                    <i class="bi bi-book me-1"></i>{{this.subject}}
+                  </span>
+                </div>
+              </div>
+
+              <div style="text-align: right;">
+                <small style="color: #64748b; font-size: 0.75rem; display: block;">
+                  <i class="bi bi-calendar3 me-1"></i>{{formatDate this.createdAt}}
+                </small>
+              </div>
+            </div>
+
+            <!-- OPINION QUOTE BUBBLE -->
+            <div class="opinion-bubble" id="opinion-text-{{@index}}">
+              {{this.opinion}}
+            </div>
+
+            <!-- VOICE AUDIO PLAYBACK BUTTON -->
+            <div style="margin-top: 0.75rem; display: flex; justify-content: flex-end;">
+              <button
+                type="button"
+                class="listen-voice-btn"
+                onclick="speakOpinion('opinion-text-{{@index}}', this)">
+                <i class="bi bi-volume-up-fill"></i>
+                <span>Listen to Feedback</span>
+              </button>
+            </div>
+          </div>
+        {{/each}}
+      </div>
+    {{else}}
+      <div class="card-box" style="text-align: center; padding: 2.5rem 1rem;">
+        <div style="width: 60px; height: 60px; border-radius: 50%; background: #f1f5f9; color: #94a3b8; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 1rem;">
+          <i class="bi bi-chat-heart"></i>
+        </div>
+        <h3 style="font-size: 1.1rem; font-weight: 700; color: #334155; margin-bottom: 0.25rem;">ഇതുവരെ ഫീഡ്‌ബാക്ക് ഇല്ല</h3>
+        <p style="color: #64748b; font-size: 0.85rem; margin: 0;">
+          അധ്യാപകർ ക്ലാസ്സ് അടിസ്ഥാനത്തിൽ നൽകുന്ന വിവരങ്ങൾ ഇവിടെ കാണാം.
+        </p>
+      </div>
+    {{/if}}
+
+  </section>
+
+</main>
+
+<script>
+// Web Speech API Voice synthesis for parent feedback
+function speakOpinion(elementId, btn) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+
+  const text = el.innerText.trim();
+  if (!text) return;
+
+  if ('speechSynthesis' in window) {
+    if (window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+      btn.innerHTML = '<i class="bi bi-volume-up-fill"></i> <span>Listen to Feedback</span>';
+      return;
+    }
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    // Prefer Malayalam or English voice
+    utterance.lang = /[\u0D00-\u0D7F]/.test(text) ? 'ml-IN' : 'en-IN';
+    utterance.rate = 0.95;
+
+    btn.innerHTML = '<i class="bi bi-pause-fill"></i> <span>Speaking... (Click to stop)</span>';
+
+    utterance.onend = function() {
+      btn.innerHTML = '<i class="bi bi-volume-up-fill"></i> <span>Listen to Feedback</span>';
+    };
+
+    utterance.onerror = function() {
+      btn.innerHTML = '<i class="bi bi-volume-up-fill"></i> <span>Listen to Feedback</span>';
+    };
+
+    window.speechSynthesis.speak(utterance);
+  } else {
+    alert("Your browser does not support audio speech synthesis.");
+  }
+}
+</script>

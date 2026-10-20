@@ -1,0 +1,116 @@
+<main class="app">
+
+  <header class="header" style="padding-bottom: 1.5rem;">
+    <div class="subpage-header">
+      <a href="/" class="back-btn">
+        <i class="bi bi-chevron-left"></i> Back
+      </a>
+      <p class="brand-name" style="margin: 0; font-size: 1.1rem; color: #fff;">Student & Parent Profile</p>
+      <div style="width: 60px;"></div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 1rem; margin-top: 1rem;">
+      <div style="width: 64px; height: 64px; border-radius: 50%; background: #ffffff; color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 700; box-shadow: 0 4px 14px rgba(0,0,0,0.2);">
+        <i class="bi bi-person-fill"></i>
+      </div>
+      <div>
+        <h1 style="font-size: 1.5rem; color: #fff; margin: 0; line-height: 1.2;">
+          {{#if student.name}}{{student.name}}{{else}}Sidharth{{/if}}
+        </h1>
+        <div style="display: flex; gap: 0.4rem; margin-top: 0.35rem;">
+          <span class="badge" style="background: rgba(255,255,255,0.25); color: #fff; font-size: 0.75rem;">
+            {{#if student.class}}{{student.class}}{{else}}Class 10{{/if}}
+          </span>
+          <span class="badge" style="background: rgba(0,0,0,0.15); color: #fff; font-size: 0.75rem;">
+            {{#if student.studentId}}{{student.studentId}}{{else}}PAD1024{{/if}}
+          </span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="section" style="padding-top: 1.25rem;">
+
+    <!-- 1. STUDENT ACADEMIC DETAILS -->
+    <div class="card-box">
+      <div class="card-box-header">
+        <div class="card-box-title">
+          <i class="bi bi-mortarboard-fill text-primary" style="color: var(--primary);"></i>
+          <span>Student Information</span>
+        </div>
+        <span class="badge" style="background: #e2eff1; color: var(--primary); font-size: 0.75rem; font-weight: 700;">Active Learner</span>
+      </div>
+
+      <div class="info-list">
+        <div class="info-item">
+          <span class="label"><i class="bi bi-person"></i> Full Name</span>
+          <span class="val">{{student.name}}</span>
+        </div>
+        <div class="info-item">
+          <span class="label"><i class="bi bi-qr-code"></i> Student ID</span>
+          <span class="val" style="font-family: monospace; letter-spacing: 0.5px;">{{student.studentId}}</span>
+        </div>
+        <div class="info-item">
+          <span class="label"><i class="bi bi-book"></i> Class / Standard</span>
+          <span class="val">{{student.class}}</span>
+        </div>
+        <div class="info-item">
+          <span class="label"><i class="bi bi-sun"></i> Shift Batch</span>
+          <span class="val">
+            {{#if (eq student.shift "Morning")}}
+              Morning (6:30 AM – 8:30 AM)
+            {{else if (eq student.shift "Afternoon")}}
+              Afternoon (3:30 PM – 5:30 PM)
+            {{else}}
+              Evening (5:30 PM – 7:30 PM)
+            {{/if}}
+          </span>
+        </div>
+        <div class="info-item">
+          <span class="label"><i class="bi bi-calendar3"></i> Academic Year</span>
+          <span class="val">{{#if student.academicYear}}{{student.academicYear}}{{else}}2026–2027{{/if}}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. PARENT & GUARDIAN DETAILS -->
+    <div class="card-box">
+      <div class="card-box-header">
+        <div class="card-box-title">
+          <i class="bi bi-people-fill" style="color: #0284c7;"></i>
+          <span>Parent & Guardian Information</span>
+        </div>
+        <span class="badge" style="background: #e0f2fe; color: #0284c7; font-size: 0.75rem; font-weight: 700;">Verified</span>
+      </div>
+
+      <div class="info-list">
+        <div class="info-item">
+          <span class="label"><i class="bi bi-person-heart"></i> Parent / Guardian</span>
+          <span class="val">{{#if student.parentName}}{{student.parentName}}{{else}}Radhakrishnan{{/if}}</span>
+        </div>
+        <div class="info-item">
+          <span class="label"><i class="bi bi-telephone"></i> Primary Contact</span>
+          <span class="val">
+            <a href="tel:{{student.parentNo}}" style="color: var(--primary); text-decoration: none;">
+              {{#if student.parentNo}}{{student.parentNo}}{{else}}9876543210{{/if}}
+            </a>
+          </span>
+        </div>
+        <div class="info-item">
+          <span class="label"><i class="bi bi-geo-alt"></i> Address</span>
+          <span class="val" style="max-width: 60%; text-align: right;">
+            {{#if student.address}}{{student.address}}{{else}}Paadashala Campus, Calicut{{/if}}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- HELPFUL FOOTER NOTE -->
+    <div style="text-align: center; padding: 0.5rem 1rem; color: #64748b; font-size: 0.825rem;">
+      <i class="bi bi-shield-check text-success me-1"></i>
+      Student records maintained securely by Paadashala After-School System.
+    </div>
+
+  </section>
+
+</main>

@@ -44,6 +44,9 @@ app.engine(
       eq: function (a, b) {
         return a === b;
       },
+      gt: function (a, b) {
+        return a > b;
+      },
       formatDate: function (dateStr) {
         if (!dateStr) return "";
         try {

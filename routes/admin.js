@@ -246,9 +246,12 @@ router.get("/students/loadAttendance", requireAuth, async (req, res) => {
     try {
         const { date, grade, shift } = req.query;
 
-        const query = { class: grade };
+        const query = {};
+        if (grade && grade !== 'all') {
+            query.class = { $regex: new RegExp('^' + grade.trim() + '$', 'i') };
+        }
         if (shift && shift !== 'all') {
-            query.shift = shift;
+            query.shift = { $regex: new RegExp('^' + shift.trim() + '$', 'i') };
         }
 
         // Fetch students matching the class and shift
@@ -366,6 +369,82 @@ router.post('/teacher-opinions', requireAuth, async (req, res) => {
     } catch (err) {
         console.error("Save teacher opinion error:", err);
         res.redirect('/admin/teacher-opinions');
+    }
+});
+
+// ---------------------------------------------
+// BROADCAST MESSAGES & ANNOUNCEMENTS ROUTES
+// ---------------------------------------------
+
+// GET /admin/messages
+router.get('/messages', requireAuth, async (req, res) => {
+    try {
+        const announcements = await db.get()
+            .collection(collections.ANNOUNCEMENT_COLLECTION)
+            .find()
+            .sort({ pinned: -1, createdAt: -1 })
+            .toArray();
+
+        const totalMessages = announcements.length;
+        const urgentCount = announcements.filter(a => a.priority === 'Urgent' || a.category === 'Urgent').length;
+        const generalCount = announcements.filter(a => a.category === 'General').length;
+
+        res.render('admin/messages', {
+            layout: isAjax(req) ? false : 'admin-layout',
+            announcements,
+            totalMessages,
+            urgentCount,
+            generalCount,
+            adminUser: req.session.adminUser
+        });
+    } catch (err) {
+        console.error("Fetch announcements error:", err);
+        res.render('admin/messages', {
+            layout: isAjax(req) ? false : 'admin-layout',
+            announcements: [],
+            totalMessages: 0,
+            urgentCount: 0,
+            generalCount: 0,
+            adminUser: req.session.adminUser
+        });
+    }
+});
+
+// POST /admin/messages/broadcast
+router.post('/messages/broadcast', requireAuth, async (req, res) => {
+    try {
+        const { title, category, target, priority, content, pinned } = req.body;
+
+        const announcement = {
+            title: title ? title.trim() : 'Official Announcement',
+            content: content ? content.trim() : '',
+            category: category || 'General',
+            target: target || 'all',
+            priority: priority || 'Normal',
+            pinned: pinned === 'true' || pinned === 'on' || pinned === true,
+            author: req.session.adminUser || 'Paadashala Administration',
+            createdAt: new Date()
+        };
+
+        await db.get().collection(collections.ANNOUNCEMENT_COLLECTION).insertOne(announcement);
+        return res.redirect('/admin/messages');
+    } catch (err) {
+        console.error("Broadcast message error:", err);
+        return res.redirect('/admin/messages');
+    }
+});
+
+// POST /admin/messages/delete/:id
+router.post('/messages/delete/:id', requireAuth, async (req, res) => {
+    try {
+        const messageId = req.params.id;
+        await db.get().collection(collections.ANNOUNCEMENT_COLLECTION).deleteOne({
+            _id: new ObjectId(messageId)
+        });
+        return res.redirect('/admin/messages');
+    } catch (err) {
+        console.error("Delete broadcast error:", err);
+        return res.redirect('/admin/messages');
     }
 });
 

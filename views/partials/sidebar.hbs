@@ -1,8 +1,13 @@
 <aside class="sidebar" id="sidebar" aria-label="Primary navigation">
-  <a class="brand" href="/admin">
-    <span class="brand-mark"><svg class="icon"><use href="#i-book"/></svg></span>
-    <span class="brand-text">Paadashala<small>After School</small></span>
-  </a>
+  <div class="sidebar-header-row" style="display: flex; align-items: center; justify-content: space-between; padding: 16px 16px 12px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+    <a class="brand" href="/admin" style="padding: 0; margin: 0;">
+      <span class="brand-mark"><svg class="icon"><use href="#i-book"/></svg></span>
+      <span class="brand-text">Paadashala<small>After School</small></span>
+    </a>
+    <button class="icon-btn sidebar-close-btn" data-sidebar-close aria-label="Close menu" style="color: #cbd5e1; background: rgba(255,255,255,0.08); border: none; border-radius: 8px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+      <i class="bi bi-x-lg" style="font-size: 1rem;"></i>
+    </button>
+  </div>
   <nav class="side-nav">
     <p class="nav-group">Main</p>
     <a class="nav-link admin-page-link" href="/admin">
@@ -39,9 +44,9 @@
       <svg class="icon"><use href="#i-msgc"/></svg>
       <span>Teacher Opinions</span>
     </a>
-    <a class="nav-link" href="#" data-toast="Messages module — coming soon">
+    <a class="nav-link admin-page-link" href="/admin/messages">
       <svg class="icon"><use href="#i-msg"/></svg>
-      <span>Messages</span>
+      <span>Broadcast Messages</span>
     </a>
     <a class="nav-link" href="#" data-toast="Daily Updates — coming soon">
       <svg class="icon"><use href="#i-file"/></svg>

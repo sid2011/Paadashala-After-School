@@ -1,0 +1,109 @@
+<main class="app">
+
+  <header class="header" style="padding-bottom: 1.5rem;">
+    <div class="subpage-header">
+      <a href="/" class="back-btn">
+        <i class="bi bi-chevron-left"></i> Back
+      </a>
+      <p class="brand-name" style="margin: 0; font-size: 1.1rem; color: #fff;">Attendance Report</p>
+      <div style="width: 60px;"></div>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1rem;">
+      <div>
+        <h1 style="font-size: 1.5rem; color: #fff; margin: 0; line-height: 1.2;">
+          {{#if student.name}}{{student.name}}{{else}}Sidharth{{/if}}
+        </h1>
+        <p style="color: rgba(255,255,255,0.85); font-size: 0.85rem; margin: 0.25rem 0 0;">
+          {{student.class}} • {{student.shift}} Shift
+        </p>
+      </div>
+
+      <div style="text-align: right;">
+        <span class="badge" style="background: rgba(255,255,255,0.25); color: #fff; font-size: 0.8rem; font-weight: 700;">
+          <i class="bi bi-calendar3 me-1"></i>2026–2027
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <section class="section" style="padding-top: 1.25rem;">
+
+    <!-- ATTENDANCE KPI & PROGRESS RING -->
+    <div class="attendance-meter-card">
+      <div class="percent-ring" style="--percent: {{attendancePercentage}}%;">
+        <div class="percent-inner">
+          <strong>{{attendancePercentage}}%</strong>
+          <small>Present</small>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem;">
+        <div class="stat-pill p-green">
+          <span style="font-size: 1.25rem; font-weight: 800;">{{presentDays}}</span>
+          <span style="font-size: 0.75rem; font-weight: 600;">Present</span>
+        </div>
+
+        <div class="stat-pill p-red">
+          <span style="font-size: 1.25rem; font-weight: 800;">{{absentDays}}</span>
+          <span style="font-size: 0.75rem; font-weight: 600;">Absent</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- DAILY ATTENDANCE HISTORY LIST -->
+    <div class="card-box">
+      <div class="card-box-header">
+        <div class="card-box-title">
+          <i class="bi bi-calendar-check" style="color: var(--primary);"></i>
+          <span>Daily Attendance Log</span>
+        </div>
+        <span class="badge" style="background: #e2eff1; color: var(--primary); font-size: 0.75rem; font-weight: 700;">
+          {{totalDays}} Records
+        </span>
+      </div>
+
+      {{#if attendanceRecords.length}}
+        <div>
+          {{#each attendanceRecords}}
+            <div class="attendance-row">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <div style="width: 38px; height: 38px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #475569; font-size: 1rem;">
+                  <i class="bi bi-calendar-event"></i>
+                </div>
+                <div>
+                  <strong style="display: block; font-size: 0.95rem; color: #1e293b;">
+                    {{formatDate this.date}}
+                  </strong>
+                  <small style="color: #64748b; font-size: 0.78rem;">
+                    {{#if this.shift}}{{this.shift}}{{else}}Batch{{/if}} Shift
+                  </small>
+                </div>
+              </div>
+
+              <div>
+                {{#if (eq this.status "present")}}
+                  <span class="att-status-badge present">
+                    <i class="bi bi-check-circle-fill me-1"></i>Present
+                  </span>
+                {{else}}
+                  <span class="att-status-badge absent">
+                    <i class="bi bi-x-circle-fill me-1"></i>Absent
+                  </span>
+                {{/if}}
+              </div>
+            </div>
+          {{/each}}
+        </div>
+      {{else}}
+        <div style="text-align: center; padding: 2rem 1rem; color: #64748b;">
+          <i class="bi bi-calendar-x fs-1 d-block mb-2" style="font-size: 2.2rem; color: #94a3b8;"></i>
+          <p style="font-weight: 600; margin-bottom: 0.25rem;">ഇതുവരെ ഹാജർ രേഖപ്പെടുത്തിയിട്ടില്ല</p>
+          <small>No attendance records saved for this student yet.</small>
+        </div>
+      {{/if}}
+    </div>
+
+  </section>
+
+</main>

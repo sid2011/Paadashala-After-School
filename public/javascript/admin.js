@@ -62,17 +62,27 @@ window.addEventListener("popstate", function () {
 });
 
 // -------------------------------------------------------------
-// 2. Sidebar Mobile Toggle
+// 2. Sidebar Mobile & Responsive Toggle
 // -------------------------------------------------------------
 document.addEventListener("click", function (e) {
     const toggleBtn = e.target.closest("[data-sidebar-toggle]");
     if (toggleBtn) {
+        document.body.classList.toggle("sidebar-open");
         const sidebar = document.querySelector(".sidebar");
         if (sidebar) sidebar.classList.toggle("open");
     }
 
-    const overlay = e.target.closest("[data-sidebar-close]");
+    const overlay = e.target.closest("[data-sidebar-close], .sidebar-overlay");
     if (overlay) {
+        document.body.classList.remove("sidebar-open");
+        const sidebar = document.querySelector(".sidebar");
+        if (sidebar) sidebar.classList.remove("open");
+    }
+
+    // Also close offcanvas sidebar when any navigation link is clicked
+    const navLink = e.target.closest(".admin-page-link");
+    if (navLink) {
+        document.body.classList.remove("sidebar-open");
         const sidebar = document.querySelector(".sidebar");
         if (sidebar) sidebar.classList.remove("open");
     }

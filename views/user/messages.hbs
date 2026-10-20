@@ -1,0 +1,120 @@
+<main class="app">
+
+  <header class="header" style="padding-bottom: 1.5rem;">
+    <div class="subpage-header">
+      <a href="/" class="back-btn">
+        <i class="bi bi-chevron-left"></i> Back
+      </a>
+      <p class="brand-name" style="margin: 0; font-size: 1.1rem; color: #fff;">Official Notices</p>
+      <div style="width: 60px;"></div>
+    </div>
+
+    <div style="margin-top: 1rem;">
+      <h1 style="font-size: 1.5rem; color: #fff; margin: 0; line-height: 1.2;">
+        School Circulars & Messages
+      </h1>
+      <p style="color: rgba(255,255,255,0.85); font-size: 0.85rem; margin: 0.25rem 0 0;">
+        പാഠശാല അഡ്മിനിസ്ട്രേഷനിൽ നിന്നുള്ള പ്രധാന അറിയിപ്പുകൾ
+      </p>
+    </div>
+  </header>
+
+  <section class="section" style="padding-top: 1.25rem;">
+
+    <!-- NOTICE COUNT SUMMARY -->
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+      <span style="font-size: 0.9rem; font-weight: 700; color: #1e293b;">
+        <i class="bi bi-megaphone-fill text-primary me-1" style="color: var(--primary);"></i>
+        All Announcements
+      </span>
+      <span class="badge" style="background: #e2eff1; color: var(--primary); font-size: 0.8rem; font-weight: 700;">
+        {{announcements.length}} Circulars
+      </span>
+    </div>
+
+    <!-- ANNOUNCEMENTS LIST -->
+    {{#if announcements.length}}
+      <div>
+        {{#each announcements}}
+          <div class="notice-item {{#if (eq this.category "Urgent")}}urgent{{else if (eq this.category "Holiday")}}holiday{{/if}}">
+            <div class="notice-header">
+              <div>
+                {{#if this.pinned}}
+                  <span class="badge" style="background: #fef08a; color: #854d0e; font-size: 0.7rem; font-weight: 700; margin-bottom: 0.35rem; display: inline-flex; align-items: center; gap: 0.25rem;">
+                    <i class="bi bi-pin-angle-fill"></i> Pinned Notice
+                  </span>
+                {{/if}}
+                <h3 class="notice-title">
+                  {{this.title}}
+                </h3>
+              </div>
+
+              <div style="text-align: right; flex-shrink: 0;">
+                <small style="color: #64748b; font-size: 0.75rem; display: block;">
+                  {{formatDate this.createdAt}}
+                </small>
+              </div>
+            </div>
+
+            <!-- TAGS -->
+            <div style="display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0.4rem 0 0.75rem;">
+              {{#if (eq this.category "Urgent")}}
+                <span class="badge" style="background: #fee2e2; color: #991b1b; font-size: 0.72rem; font-weight: 700;">
+                  <i class="bi bi-exclamation-triangle-fill me-1"></i>Urgent Notice
+                </span>
+              {{else if (eq this.category "Holiday")}}
+                <span class="badge" style="background: #fef3c7; color: #92400e; font-size: 0.72rem; font-weight: 700;">
+                  <i class="bi bi-calendar-event me-1"></i>Holiday
+                </span>
+              {{else if (eq this.category "Fee Reminder")}}
+                <span class="badge" style="background: #e0f2fe; color: #075985; font-size: 0.72rem; font-weight: 700;">
+                  <i class="bi bi-credit-card me-1"></i>Fees Update
+                </span>
+              {{else if (eq this.category "Exam")}}
+                <span class="badge" style="background: #f3e8ff; color: #6b21a8; font-size: 0.72rem; font-weight: 700;">
+                  <i class="bi bi-pencil-square me-1"></i>Exam / Assessment
+                </span>
+              {{else}}
+                <span class="badge" style="background: #f1f5f9; color: #475569; font-size: 0.72rem;">
+                  General Notice
+                </span>
+              {{/if}}
+
+              {{#if (eq this.target "all")}}
+                <span class="badge" style="background: #ecfdf5; color: #065f46; font-size: 0.72rem;">
+                  <i class="bi bi-people me-1"></i>All Students & Parents
+                </span>
+              {{else}}
+                <span class="badge" style="background: #f1f5f9; color: #334155; font-size: 0.72rem;">
+                  {{this.target}}
+                </span>
+              {{/if}}
+            </div>
+
+            <!-- NOTICE CONTENT BODY -->
+            <div class="notice-body">
+              {{this.content}}
+            </div>
+
+            <div style="margin-top: 0.75rem; padding-top: 0.5rem; border-top: 1px dashed #e2e8f0; font-size: 0.75rem; color: #64748b; display: flex; justify-content: space-between;">
+              <span>From: <strong>{{#if this.author}}{{this.author}}{{else}}Administration{{/if}}</strong></span>
+              <span style="color: var(--primary);"><i class="bi bi-check2-circle me-1"></i>Official</span>
+            </div>
+          </div>
+        {{/each}}
+      </div>
+    {{else}}
+      <div class="card-box" style="text-align: center; padding: 2.5rem 1rem;">
+        <div style="width: 60px; height: 60px; border-radius: 50%; background: #f1f5f9; color: #94a3b8; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 1rem;">
+          <i class="bi bi-bell-slash"></i>
+        </div>
+        <h3 style="font-size: 1.1rem; font-weight: 700; color: #334155; margin-bottom: 0.25rem;">അറിയിപ്പുകൾ ഒന്നും ലഭ്യമല്ല</h3>
+        <p style="color: #64748b; font-size: 0.85rem; margin: 0;">
+          അഡ്മിൻ അയക്കുന്ന അറിയിപ്പുകൾ തത്സമയം ഇവിടെ കാണാം.
+        </p>
+      </div>
+    {{/if}}
+
+  </section>
+
+</main>

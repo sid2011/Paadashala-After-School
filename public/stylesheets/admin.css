@@ -914,8 +914,8 @@ table.table { width: 100%; border-collapse: collapse; min-width: 760px; }
 
 @media (max-width: 1024px) {
   .sidebar { transform: translateX(-105%); box-shadow: none; }
-  body.sidebar-open .sidebar { transform: translateX(0); box-shadow: 0 0 48px rgba(0, 0, 0, 0.35); }
-  body.sidebar-open .sidebar-overlay { opacity: 1; pointer-events: auto; }
+  body.sidebar-open .sidebar, .sidebar.open { transform: translateX(0) !important; box-shadow: 0 0 48px rgba(0, 0, 0, 0.35) !important; z-index: 100 !important; }
+  body.sidebar-open .sidebar-overlay, .sidebar-overlay.active { opacity: 1 !important; pointer-events: auto !important; z-index: 90 !important; }
   .main { margin-left: 0; }
   .menu-btn { display: grid; }
   .topbar { padding: 0 16px; }
@@ -1611,3 +1611,113 @@ textarea.finput {
 .recording-pulse {
     animation: pulse-red 1.5s infinite;
 }
+
+/* ---------- Teacher Opinion Responsiveness & Cards ---------- */
+.teacher-opinions-page {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.opinion-entry-item {
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.opinion-entry-item:hover {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05) !important;
+    border-color: #cbd5e1 !important;
+}
+
+.opinion-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.opinion-list::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 10px;
+}
+
+/* ---------- Broadcast Messages Feed ---------- */
+.messages-page {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.broadcast-item {
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.broadcast-item:hover {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05) !important;
+    border-color: #cbd5e1 !important;
+}
+
+.broadcast-feed::-webkit-scrollbar {
+    width: 6px;
+}
+
+.broadcast-feed::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 10px;
+}
+
+/* ============================================================
+   ADMIN FULLSCREEN OFFCANVAS DRAWER (100% NON-TRANSPARENT & RESPONSIVE)
+   ============================================================ */
+.main {
+    margin-left: 0 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+}
+
+.menu-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.sidebar {
+    position: fixed !important;
+    inset: 0 auto 0 0 !important;
+    width: 280px !important;
+    max-width: 85vw !important;
+    height: 100vh !important;
+    background: #94d0f5 !important;
+    background-color: #94d0f5 !important;
+    color: var(--sidebar-text) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    z-index: 2000 !important;
+    transform: translateX(-105%) !important;
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: none !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+body.sidebar-open .sidebar,
+.sidebar.open {
+    transform: translateX(0) !important;
+    box-shadow: 4px 0 35px rgba(0, 0, 0, 0.55) !important;
+}
+
+.sidebar-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    background: rgba(10, 20, 28, 0.65) !important;
+    backdrop-filter: blur(2px) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transition: opacity 0.25s ease !important;
+    z-index: 1990 !important;
+}
+
+body.sidebar-open .sidebar-overlay,
+.sidebar-overlay.active {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+

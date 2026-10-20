@@ -1,0 +1,276 @@
+<div class="messages-page p-3 p-md-4">
+
+  <!-- Header -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+      <h1 class="page-title m-0">Official Announcements & Broadcasts</h1>
+      <p class="text-muted m-0">എല്ലാ വിദ്യാർത്ഥികളിലേക്കും രക്ഷിതാക്കളിലേക്കും അറിയിപ്പുകൾ അയക്കാം</p>
+    </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="stat-card stat-blue">
+        <div class="stat-body">
+          <span class="stat-label">Total Broadcasts</span>
+          <h2 class="stat-value">{{totalMessages}}</h2>
+          <span class="stat-sub"><i class="bi bi-broadcast"></i> Sent announcements</span>
+        </div>
+        <div class="stat-icon-wrap">
+          <i class="bi bi-megaphone-fill"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="stat-card stat-amber">
+        <div class="stat-body">
+          <span class="stat-label">Urgent Notices</span>
+          <h2 class="stat-value">{{urgentCount}}</h2>
+          <span class="stat-sub"><i class="bi bi-exclamation-triangle-fill"></i> High priority</span>
+        </div>
+        <div class="stat-icon-wrap">
+          <i class="bi bi-bell-fill"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="stat-card stat-teal">
+        <div class="stat-body">
+          <span class="stat-label">General Notices</span>
+          <h2 class="stat-value">{{generalCount}}</h2>
+          <span class="stat-sub"><i class="bi bi-info-circle-fill"></i> Informational circulars</span>
+        </div>
+        <div class="stat-icon-wrap">
+          <i class="bi bi-newspaper"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="stat-card stat-purple">
+        <div class="stat-body">
+          <span class="stat-label">Audience Reach</span>
+          <h2 class="stat-value">100%</h2>
+          <span class="stat-sub"><i class="bi bi-check2-all"></i> Parents & Students</span>
+        </div>
+        <div class="stat-icon-wrap">
+          <i class="bi bi-people-fill"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 align-items-start">
+    <!-- COMPOSE BROADCAST FORM -->
+    <div class="col-12 col-lg-5">
+      <div class="dash-card shadow-sm border">
+        <div class="dash-card-header bg-light border-bottom py-3 px-4">
+          <h3 class="dash-card-title m-0 d-flex align-items-center">
+            <i class="bi bi-send-fill text-primary me-2"></i> Compose Broadcast
+          </h3>
+          <span class="text-muted small">പുതിയ ഔദ്യോഗിക അറിയിപ്പ് തയ്യാറാക്കുക</span>
+        </div>
+
+        <div class="dash-card-body p-4">
+          <form action="/admin/messages/broadcast" method="POST">
+
+            <!-- TITLE -->
+            <div class="mb-3">
+              <label class="form-label fw-semibold text-secondary small" for="broadcastTitle">
+                Announcement Title <span class="text-danger">*</span>
+              </label>
+              <input
+                type="text"
+                class="form-control"
+                id="broadcastTitle"
+                name="title"
+                placeholder="e.g. അവധി പ്രഖ്യാപനം / Special Revision Batch"
+                required />
+            </div>
+
+            <!-- TARGET AUDIENCE -->
+            <div class="mb-3">
+              <label class="form-label fw-semibold text-secondary small" for="broadcastTarget">
+                Target Audience <span class="text-danger">*</span>
+              </label>
+              <select class="form-select" id="broadcastTarget" name="target" required>
+                <option value="all" selected>📢 All Users (എല്ലാ രക്ഷിതാക്കളും & കുട്ടികളും)</option>
+                <option value="Class 1">Class 1 Only</option>
+                <option value="Class 2">Class 2 Only</option>
+                <option value="Class 3">Class 3 Only</option>
+                <option value="Class 4">Class 4 Only</option>
+                <option value="Class 5">Class 5 Only</option>
+                <option value="Class 6">Class 6 Only</option>
+                <option value="Class 7">Class 7 Only</option>
+                <option value="Class 8">Class 8 Only</option>
+                <option value="Class 9">Class 9 Only</option>
+                <option value="Class 10">Class 10 Only</option>
+              </select>
+              <small class="text-muted">ഒരു പ്രത്യേക ക്ലാസിനോ അല്ലെങ്കിൽ എല്ലാവർക്കുമായോ തിരഞ്ഞെടുക്കാം.</small>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <!-- CATEGORY -->
+              <div class="col-12 col-sm-6">
+                <label class="form-label fw-semibold text-secondary small" for="broadcastCategory">
+                  Category <span class="text-danger">*</span>
+                </label>
+                <select class="form-select" id="broadcastCategory" name="category" required>
+                  <option value="General" selected>General (പൊതുവായത്)</option>
+                  <option value="Urgent">🚨 Urgent Notice</option>
+                  <option value="Holiday">🏖️ Holiday (അവധി)</option>
+                  <option value="Exam">📝 Exam / Assessment</option>
+                  <option value="Fee Reminder">💳 Fee Reminder</option>
+                </select>
+              </div>
+
+              <!-- PRIORITY -->
+              <div class="col-12 col-sm-6">
+                <label class="form-label fw-semibold text-secondary small" for="broadcastPriority">
+                  Priority Level <span class="text-danger">*</span>
+                </label>
+                <select class="form-select" id="broadcastPriority" name="priority" required>
+                  <option value="Normal" selected>Normal</option>
+                  <option value="Important">Important</option>
+                  <option value="Urgent">High Priority (Urgent)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- PINNED CHECKBOX -->
+            <div class="form-check form-switch mb-3">
+              <input class="form-check-input" type="checkbox" id="pinnedNotice" name="pinned" value="true">
+              <label class="form-check-label fw-semibold text-dark small" for="pinnedNotice">
+                📌 Pin to Top (രക്ഷിതാക്കളുടെ ആപ്പിൽ മുകളിൽ പിൻ ചെയ്യുക)
+              </label>
+            </div>
+
+            <!-- CONTENT -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold text-secondary small" for="broadcastContent">
+                Message Content / Circular Text <span class="text-danger">*</span>
+              </label>
+              <textarea
+                class="form-control"
+                id="broadcastContent"
+                name="content"
+                rows="5"
+                placeholder="അറിയിപ്പിന്റെ വിശദവിവരങ്ങൾ ഇവിടെ ടൈപ്പ് ചെയ്യുക..."
+                required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold d-flex align-items-center justify-content-center gap-2">
+              <i class="bi bi-broadcast"></i>
+              <span>Send Official Broadcast</span>
+            </button>
+
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- BROADCAST HISTORY / SENT MESSAGES -->
+    <div class="col-12 col-lg-7">
+      <div class="dash-card shadow-sm border">
+        <div class="dash-card-header bg-light border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2 py-3 px-4">
+          <div>
+            <h3 class="dash-card-title m-0 d-flex align-items-center">
+              <i class="bi bi-clock-history text-primary me-2"></i> Sent Broadcast History
+            </h3>
+            <span class="text-muted small">മുമ്പ് അയച്ച അറിയിപ്പുകൾ</span>
+          </div>
+          <span class="badge bg-primary-subtle text-primary fw-semibold px-3 py-2 rounded-pill">{{announcements.length}} Total</span>
+        </div>
+
+        <div class="dash-card-body p-3">
+          <div class="broadcast-feed" style="max-height: 720px; overflow-y: auto; padding-right: 4px;">
+            {{#if announcements.length}}
+              {{#each announcements}}
+                <div class="broadcast-item bg-white p-3 mb-3 border rounded-3 shadow-none position-relative">
+                  <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
+                    <div>
+                      <h5 class="m-0 fw-bold text-dark d-flex align-items-center gap-2" style="font-size: 1.05rem;">
+                        {{#if this.pinned}}
+                          <span class="badge bg-warning text-dark border px-2 py-1"><i class="bi bi-pin-angle-fill me-1"></i>Pinned</span>
+                        {{/if}}
+                        <span>{{this.title}}</span>
+                      </h5>
+
+                      <div class="d-flex flex-wrap gap-2 mt-2 align-items-center">
+                        <!-- Target Badge -->
+                        {{#if (eq this.target "all")}}
+                          <span class="badge bg-success-subtle text-success border px-2 py-1 rounded">
+                            <i class="bi bi-globe me-1"></i>All Users
+                          </span>
+                        {{else}}
+                          <span class="badge bg-primary-subtle text-primary border px-2 py-1 rounded">
+                            <i class="bi bi-person-workspace me-1"></i>{{this.target}}
+                          </span>
+                        {{/if}}
+
+                        <!-- Category Badge -->
+                        {{#if (eq this.category "Urgent")}}
+                          <span class="badge bg-danger-subtle text-danger border px-2 py-1 rounded fw-semibold">
+                            <i class="bi bi-exclamation-triangle-fill me-1"></i>Urgent
+                          </span>
+                        {{else if (eq this.category "Holiday")}}
+                          <span class="badge bg-warning-subtle text-warning-emphasis border px-2 py-1 rounded fw-semibold">
+                            <i class="bi bi-calendar-event me-1"></i>Holiday
+                          </span>
+                        {{else if (eq this.category "Fee Reminder")}}
+                          <span class="badge bg-info-subtle text-info-emphasis border px-2 py-1 rounded fw-semibold">
+                            <i class="bi bi-credit-card me-1"></i>Fees
+                          </span>
+                        {{else}}
+                          <span class="badge bg-secondary-subtle text-secondary border px-2 py-1 rounded">
+                            {{this.category}}
+                          </span>
+                        {{/if}}
+
+                        <!-- Priority Badge -->
+                        {{#if (eq this.priority "Urgent")}}
+                          <span class="badge bg-danger text-white px-2 py-1 rounded">High Priority</span>
+                        {{/if}}
+                      </div>
+                    </div>
+
+                    <div class="text-end">
+                      <small class="text-muted d-block" style="font-size: 0.8rem;">
+                        <i class="bi bi-calendar-check me-1"></i>{{formatDate this.createdAt}}
+                      </small>
+                      <small class="text-muted d-block">By: {{this.author}}</small>
+                    </div>
+                  </div>
+
+                  <!-- Content Text -->
+                  <div class="p-3 bg-light-subtle rounded-3 mt-2 text-dark border-start border-4 border-info" style="font-size: 0.95rem; line-height: 1.6; background-color: #f8fafc; white-space: pre-line;">
+                    {{this.content}}
+                  </div>
+
+                  <!-- Actions -->
+                  <div class="d-flex justify-content-end mt-2">
+                    <form action="/admin/messages/delete/{{this._id}}" method="POST" onsubmit="return confirm('ഈ മെസ്സേജ് ഡിലീറ്റ് ചെയ്യണോ? (Delete announcement?)');">
+                      <button type="submit" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1 py-1 px-2" style="font-size: 0.8rem;">
+                        <i class="bi bi-trash"></i> Delete Broadcast
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              {{/each}}
+            {{else}}
+              <div class="text-center py-5 text-muted">
+                <i class="bi bi-megaphone fs-1 text-secondary d-block mb-2"></i>
+                <div class="fw-semibold">ഇതുവരെ അറിയിപ്പുകൾ അയച്ചിട്ടില്ല.</div>
+                <small>ഇടതുവശത്തുള്ള ഫോം ഉപയോഗിച്ച് രക്ഷിതാക്കൾക്കായി അറിയിപ്പുകൾ അയക്കുക.</small>
+              </div>
+            {{/if}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

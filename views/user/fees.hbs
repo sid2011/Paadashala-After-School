@@ -1,0 +1,51 @@
+<main class="app">
+
+  <header class="header" style="padding-bottom: 1.5rem;">
+    <div class="subpage-header">
+      <a href="/" class="back-btn">
+        <i class="bi bi-chevron-left"></i> Back
+      </a>
+      <p class="brand-name" style="margin: 0; font-size: 1.1rem; color: #fff;">Fee Status</p>
+      <div style="width: 60px;"></div>
+    </div>
+
+    <div style="margin-top: 1rem;">
+      <h1 style="font-size: 1.5rem; color: #fff; margin: 0; line-height: 1.2;">
+        {{#if student.name}}{{student.name}}{{else}}Sidharth{{/if}}'s Fees
+      </h1>
+      <p style="color: rgba(255,255,255,0.85); font-size: 0.85rem; margin: 0.25rem 0 0;">
+        അധ്യയന വർഷ ഫീസ് വിവരങ്ങൾ
+      </p>
+    </div>
+  </header>
+
+  <section class="section" style="padding-top: 1.25rem;">
+
+    <div class="card-box">
+      <div class="card-box-header">
+        <div class="card-box-title">
+          <i class="bi bi-credit-card-2-front" style="color: #d97706;"></i>
+          <span>Academic Year 2026–2027</span>
+        </div>
+        <span class="badge" style="background: #fef3c7; color: #b45309; font-size: 0.75rem; font-weight: 700;">Active</span>
+      </div>
+
+      <div class="info-list">
+        <div class="info-item">
+          <span class="label"><i class="bi bi-person"></i> Student Name</span>
+          <span class="val">{{student.name}}</span>
+        </div>
+        <div class="info-item">
+          <span class="label"><i class="bi bi-mortarboard"></i> Class & Shift</span>
+          <span class="val">{{student.class}} ({{student.shift}})</span>
+        </div>
+        <div class="info-item">
+          <span class="label"><i class="bi bi-check2-circle"></i> Fee Status</span>
+          <span class="val"><span class="badge" style="background: #dcfce7; color: #15803d; font-size: 0.8rem; font-weight: 700;">Up to date</span></span>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+</main>

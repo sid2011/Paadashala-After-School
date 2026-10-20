@@ -1,10 +1,33 @@
 <main class="app">
 
   <header class="header">
-    <div class="brand">
-      <div>
-        <p class="brand-name">Paadashala</p>
-        <p class="brand-sub">After School</p>
+    <div class="brand" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <div>
+          <p class="brand-name">Paadashala</p>
+          <p class="brand-sub">After School</p>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        {{#if allStudents.length}}
+          {{#if (gt allStudents.length 1)}}
+            <!-- Student Switcher for multi-student parents -->
+            <select
+              onchange="window.location.href='/?studentId=' + this.value"
+              style="background: rgba(255, 255, 255, 0.2); color: #fff; border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 9999px; padding: 0.3rem 0.75rem; font-size: 0.8rem; font-weight: 600; outline: none; cursor: pointer;">
+              {{#each allStudents}}
+                <option value="{{this.studentId}}" style="color: #000;" {{#if (eq this.studentId ../student.studentId)}}selected{{/if}}>
+                  {{this.name}}
+                </option>
+              {{/each}}
+            </select>
+          {{/if}}
+        {{/if}}
+
+        <a href="/logout" title="Log out" style="background: rgba(255, 255, 255, 0.2); color: #fff; border-radius: 9999px; padding: 0.3rem 0.75rem; font-size: 0.8rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem;">
+          <i class="bi bi-box-arrow-right"></i> Logout
+        </a>
       </div>
     </div>
 
@@ -13,60 +36,107 @@
         <span id="greeting">Welcome</span> 👋
       </p>
 
-      <h1 class="student">Sidharth</h1>
-      <p class="badge">Class 2026–2027</p>
+      <h1 class="student">{{#if student.name}}{{student.name}}{{else}}Sidharth{{/if}}</h1>
+      <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-top: 0.5rem;">
+        <span class="badge" style="background: rgba(255,255,255,0.25); color: #fff; font-weight: 600;">
+          {{#if student.class}}{{student.class}}{{else}}Class 10{{/if}}
+        </span>
+        <span class="badge" style="background: rgba(255,255,255,0.18); color: #fff;">
+          <i class="bi bi-clock me-1"></i>{{#if student.shift}}{{student.shift}}{{else}}Evening{{/if}} Batch
+        </span>
+        <span class="badge" style="background: rgba(0,0,0,0.15); color: #fff; font-size: 0.75rem;">
+          ID: {{#if student.studentId}}{{student.studentId}}{{else}}PAD1024{{/if}}
+        </span>
+      </div>
     </div>
   </header>
 
-  <section class="section">
+  <section class="section" style="padding-top: 1.25rem;">
 
-    <h2>Quick Access</h2>
+    <!-- LATEST BROADCAST ALERT (IF ANY) -->
+    {{#if latestNotice}}
+      <a href="/messages" style="text-decoration: none; color: inherit; display: block; margin-bottom: 1.25rem;">
+        <div style="background: linear-gradient(135deg, #fff7ed, #ffedd5); border: 1.5px solid #fed7aa; border-radius: 1.25rem; padding: 0.85rem 1.15rem; box-shadow: var(--shadow-tile); display: flex; align-items: center; gap: 0.85rem;">
+          <div style="width: 42px; height: 42px; border-radius: 50%; background: #ea580c; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0;">
+            <i class="bi bi-megaphone-fill"></i>
+          </div>
+          <div style="flex: 1; min-width: 0;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+              <span style="font-size: 0.75rem; font-weight: 700; color: #c2410c; text-transform: uppercase;">Official Notice</span>
+              <span style="font-size: 0.7rem; color: #9a3412;">{{formatDate latestNotice.createdAt}}</span>
+            </div>
+            <strong style="display: block; font-size: 0.95rem; color: #431407; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              {{latestNotice.title}}
+            </strong>
+          </div>
+          <i class="bi bi-chevron-right" style="color: #ea580c;"></i>
+        </div>
+      </a>
+    {{/if}}
+
+    <!-- QUICK ACCESS GRID -->
+    <h2 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.85rem; color: #1e293b;">Quick Access</h2>
 
     <div class="card">
-
       <div class="grid">
 
+        <!-- 1. PROFILE -->
         <a href="/profile" class="tile">
-  <span class="tile-icon">👤</span>
-  <span class="tile-label">Profile</span>
-      </a>
+          <span class="tile-icon" style="background: #e0f2fe; color: #0284c7;">
+            <i class="bi bi-person-badge-fill" style="font-size: 1.75rem;"></i>
+          </span>
+          <span class="tile-label">Profile</span>
+        </a>
 
+        <!-- 2. ATTENDANCE -->
         <a href="/attendance" class="tile">
-  <span class="tile-icon">📅</span>
-  <span class="tile-label">Attendance</span>
-</a>
+          <span class="tile-icon" style="background: #dcfce7; color: #16a34a;">
+            <i class="bi bi-calendar2-check-fill" style="font-size: 1.75rem;"></i>
+          </span>
+          <span class="tile-label">Attendance</span>
+        </a>
 
-        <a href="/fees" class="tile">
-  <span class="tile-icon">💳</span>
-  <span class="tile-label">Fees</span>
-</a>
-
-        <a href="/profile" class="tile">
-  <span class="tile-icon">📊</span>
-  <span class="tile-label">Marks</span>
-</a>
+        <!-- 3. MESSAGES & NOTICES -->
         <a href="/messages" class="tile">
-  <span class="tile-icon">💬</span>
-  <span class="tile-label">Messages</span>
-</a>
+          <span class="tile-icon" style="background: #ffedd5; color: #ea580c;">
+            <i class="bi bi-chat-left-dots-fill" style="font-size: 1.75rem;"></i>
+          </span>
+          <span class="tile-label">Messages</span>
+        </a>
 
+        <!-- 4. TEACHER OPINION -->
         <a href="/teacher-opinion" class="tile">
-  <span class="tile-icon">📄</span>
-  <span class="tile-label">Teacher opinion</span>
-</a>
+          <span class="tile-icon" style="background: #f3e8ff; color: #9333ea;">
+            <i class="bi bi-mic-fill" style="font-size: 1.75rem;"></i>
+          </span>
+          <span class="tile-label">Teacher Opinion</span>
+        </a>
 
+        <!-- 5. FEES -->
+        <a href="/fees" class="tile">
+          <span class="tile-icon" style="background: #fef3c7; color: #d97706;">
+            <i class="bi bi-credit-card-2-front-fill" style="font-size: 1.75rem;"></i>
+          </span>
+          <span class="tile-label">Fees</span>
+        </a>
+
+        <!-- 6. TIMETABLE -->
         <a href="/timetable" class="tile">
-          <span class="tile-icon">🗓️</span>
+          <span class="tile-icon" style="background: #ede9fe; color: #7c3aed;">
+            <i class="bi bi-clock-history" style="font-size: 1.75rem;"></i>
+          </span>
           <span class="tile-label">Timetable</span>
         </a>
 
+        <!-- 7. TECHNICAL SUPPORT -->
         <a href="/technical-support" class="tile">
-          <span class="tile-icon">🎧</span>
-          <span class="tile-label">Technical Support</span>
+          <span class="tile-icon" style="background: #e2e8f0; color: #475569;">
+            <i class="bi bi-headset" style="font-size: 1.75rem;"></i>
+          </span>
+          <span class="tile-label">Tech Support</span>
         </a>
 
       </div>
-
     </div>
 
   </section>
