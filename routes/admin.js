@@ -5,6 +5,7 @@ var router = express.Router();
 const db = require("../config/connections");
 const collections = require("../config/collections");
 const { generateStudentFees, updateStudentFeeAmount } = require("../helpers/fee-helper");
+const { sendNotification } = require("../helpers/notification-helper");
 
 // Helper: check if request is an AJAX/Fetch request
 function isAjax(req) {
@@ -368,8 +369,7 @@ router.get('/students/attendance', requireAuth, async (req, res) => {
 // GET /admin/students/loadAttendance
 router.get("/students/loadAttendance", requireAuth, async (req, res) => {
     try {
-
-        const { date, grade, shift } = req.query;
+        const { date, grade, shift, subject } = req.query;
 
         const query = {};
         if (grade && grade !== "all") {
@@ -381,12 +381,10 @@ router.get("/students/loadAttendance", requireAuth, async (req, res) => {
 
             query.class = classNumber;
             if (shift && shift !== "all") {
-    query.shift = shift;
-}
+                query.shift = shift;
+            }
         }
-        console.log("Selected grade:", grade);
-console.log("Selected shift:", shift);
-console.log("MongoDB filter:", query);
+
         // Fetch students matching the class and shift
         const students = await db
             .get()
@@ -394,11 +392,20 @@ console.log("MongoDB filter:", query);
             .find(query)
             .sort({ name: 1 })
             .toArray();
-        // Check if attendance already recorded for this date and class
+
+        // Check if attendance already recorded for this date, class, and subject
+        const attendanceFilter = { date: date };
+        if (grade && grade !== "all") {
+            attendanceFilter.class = grade;
+        }
+        if (subject) {
+            attendanceFilter.subject = subject;
+        }
+
         const existingAttendance = await db
             .get()
             .collection(collections.STUDENT_ATTENDANCE_COLLECTION)
-            .find({ date: date, class: grade })
+            .find(attendanceFilter)
             .toArray();
 
         const attendanceMap = {};
@@ -411,6 +418,7 @@ console.log("MongoDB filter:", query);
             name: s.name,
             class: s.class,
             shift: s.shift || 'General',
+            subject: subject || 'General',
             status: attendanceMap[s.studentId] || 'present'
         }));
 
@@ -421,7 +429,7 @@ console.log("MongoDB filter:", query);
     }
 });
 
-// POST /admin/students/attendance
+// POST /admin/students/attendance (Subject-wise Attendance + Instant Notification)
 router.post('/students/attendance', requireAuth, async (req, res) => {
     try {
         const records = req.body;
@@ -429,26 +437,71 @@ router.post('/students/attendance', requireAuth, async (req, res) => {
             return res.status(400).json({ success: false, message: "No attendance data provided" });
         }
 
-        const bulkOps = records.map(record => ({
-            updateOne: {
-                filter: { date: record.date, studentId: record.studentId },
-                update: {
-                    $set: {
+        const database = db.get();
+        const studentCol = database.collection(collections.STUDENT_COLLECTION);
+        const attendanceCol = database.collection(collections.STUDENT_ATTENDANCE_COLLECTION);
+
+        // Fetch student records to obtain parent contact info for push dispatch
+        const studentIds = records.map(r => r.studentId);
+        const students = await studentCol.find({ studentId: { $in: studentIds } }).toArray();
+        const studentMap = {};
+        students.forEach(s => { studentMap[s.studentId] = s; });
+
+        const bulkOps = records.map(record => {
+            const subject = record.subject || 'General';
+            return {
+                updateOne: {
+                    filter: {
                         date: record.date,
                         studentId: record.studentId,
-                        studentName: record.studentName,
-                        class: record.class,
-                        shift: record.shift,
-                        status: record.status,
-                        updatedAt: new Date()
-                    }
-                },
-                upsert: true
-            }
-        }));
+                        subject: subject
+                    },
+                    update: {
+                        $set: {
+                            date: record.date,
+                            studentId: record.studentId,
+                            studentName: record.studentName,
+                            class: record.class,
+                            shift: record.shift,
+                            subject: subject,
+                            status: record.status,
+                            updatedAt: new Date()
+                        }
+                    },
+                    upsert: true
+                }
+            };
+        });
 
-        await db.get().collection(collections.STUDENT_ATTENDANCE_COLLECTION).bulkWrite(bulkOps);
-        res.json({ success: true, message: "Attendance saved successfully" });
+        await attendanceCol.bulkWrite(bulkOps);
+
+        // Dispatch notifications for each student to their parents (Push + In-App)
+        for (const record of records) {
+            const s = studentMap[record.studentId];
+            const parentPhone = s ? (s.parentNo || s.phone) : null;
+            const subjectName = record.subject || 'ക്ലാസ്സ്';
+            const isAbsent = record.status === 'absent';
+
+            const title = isAbsent 
+                ? `⚠️ അറ്റൻഡൻസ് അലേർട്ട്: ${record.studentName}`
+                : `✅ അറ്റൻഡൻസ്: ${record.studentName}`;
+            
+            const message = isAbsent
+                ? `ശ്രദ്ധിക്കുക: ${record.studentName} ഇന്ന് (${record.date}) ${subjectName} ക്ലാസ്സിൽ ഹാജരായിട്ടില്ല (Absent).`
+                : `${record.studentName} ഇന്ന് (${record.date}) ${subjectName} ക്ലാസ്സിൽ ഹാജരായിട്ടുണ്ട് (Present).`;
+
+            sendNotification(database, {
+                studentId: record.studentId,
+                parentPhone: parentPhone,
+                targetClass: record.class,
+                title: title,
+                message: message,
+                type: 'attendance',
+                url: '/attendance'
+            }).catch(e => console.error("Notification dispatch error:", e.message));
+        }
+
+        res.json({ success: true, message: "Attendance saved and notifications sent successfully" });
     } catch (err) {
         console.error("Save attendance error:", err);
         res.status(500).json({ success: false, error: err.message });
@@ -622,6 +675,402 @@ router.get('/fees', requireAuth, async (req, res) => {
             totalPending: 0,
             transactions: []
         });
+    }
+});
+
+// ---------------------------------------------
+// DAILY CLASS ACTIVITIES & HOMEWORK ROUTES
+// ---------------------------------------------
+
+// GET /admin/activities
+router.get('/activities', requireAuth, async (req, res) => {
+    try {
+        const database = db.get();
+        const activities = await database
+            .collection(collections.DAILY_ACTIVITY_COLLECTION)
+            .find()
+            .sort({ date: -1, createdAt: -1 })
+            .toArray();
+
+        const teachers = await database
+            .collection(collections.TEACHER_COLLECTION)
+            .find()
+            .sort({ name: 1 })
+            .toArray();
+
+        const students = await database
+            .collection(collections.STUDENT_COLLECTION)
+            .find()
+            .sort({ name: 1 })
+            .toArray();
+
+        res.render('admin/activities', {
+            layout: isAjax(req) ? false : 'admin-layout',
+            adminUser: req.session.adminUser,
+            activities,
+            teachers,
+            students
+        });
+    } catch (err) {
+        console.error("Fetch activities error:", err);
+        res.render('admin/activities', {
+            layout: isAjax(req) ? false : 'admin-layout',
+            adminUser: req.session.adminUser,
+            activities: [],
+            teachers: [],
+            students: []
+        });
+    }
+});
+
+// POST /admin/activities/create
+router.post('/activities/create', requireAuth, async (req, res) => {
+    try {
+        const { date, class: className, studentId, subject, shift, teacherName, topic, notes, description, homework } = req.body;
+        const database = db.get();
+
+        const notesGiven = (notes || description || '').trim();
+        const homeworkGiven = (homework || '').trim();
+
+        let targetStudentId = null;
+        let targetStudentName = 'All Students';
+
+        if (studentId && studentId !== 'ALL') {
+            const matchedStudent = await database.collection(collections.STUDENT_COLLECTION).findOne({ studentId });
+            if (matchedStudent) {
+                targetStudentId = matchedStudent.studentId;
+                targetStudentName = matchedStudent.name;
+            }
+        }
+
+        const activity = {
+            date: date || new Date().toISOString().split('T')[0],
+            class: className,
+            targetStudentId: targetStudentId,
+            targetStudentName: targetStudentName,
+            subject: subject,
+            shift: shift || 'All Batches',
+            teacherName: teacherName ? teacherName.trim() : 'Paadashala Faculty',
+            topic: topic ? topic.trim() : 'Class Activity',
+            notesGiven: notesGiven,
+            homeworkGiven: homeworkGiven,
+            description: notesGiven, // backward compatibility
+            homework: homeworkGiven,  // backward compatibility
+            author: req.session.adminUser || 'Paadashala Faculty',
+            createdAt: new Date()
+        };
+
+        await database.collection(collections.DAILY_ACTIVITY_COLLECTION).insertOne(activity);
+
+        // Notify parents
+        if (targetStudentId) {
+            // Specific student
+            const s = await database.collection(collections.STUDENT_COLLECTION).findOne({ studentId: targetStudentId });
+            if (s) {
+                const parentPhone = s.parentNo || s.phone;
+                sendNotification(database, {
+                    studentId: s.studentId,
+                    parentPhone: parentPhone,
+                    targetClass: className,
+                    title: `📝 ${subject} ആക്ടിവിറ്റി: ${s.name}`,
+                    message: `${subject} - Notes: ${notesGiven.slice(0, 60)}${homeworkGiven ? ` | ${subject} - Homework: ${homeworkGiven.slice(0, 50)}` : ''}`,
+                    type: 'activity',
+                    url: '/activities'
+                }).catch(e => console.error("Individual activity notification error:", e.message));
+            }
+        } else {
+            // All students in this class
+            const students = await database.collection(collections.STUDENT_COLLECTION).find({
+                $or: [{ class: className }, { class: Number(String(className).replace(/^Class\s*/i, '')) }]
+            }).toArray();
+
+            for (const s of students) {
+                const parentPhone = s.parentNo || s.phone;
+                sendNotification(database, {
+                    studentId: s.studentId,
+                    parentPhone: parentPhone,
+                    targetClass: className,
+                    title: `📚 ${subject} ആക്ടിവിറ്റി (${className})`,
+                    message: `${subject} - Notes: ${notesGiven.slice(0, 60)}${homeworkGiven ? ` | ${subject} - Homework: ${homeworkGiven.slice(0, 50)}` : ''}`,
+                    type: 'activity',
+                    url: '/activities'
+                }).catch(e => console.error("Class activity notification error:", e.message));
+            }
+        }
+
+        return res.redirect('/admin/activities');
+    } catch (err) {
+        console.error("Create activity error:", err);
+        return res.redirect('/admin/activities');
+    }
+});
+
+// POST /admin/activities/delete/:id
+router.post('/activities/delete/:id', requireAuth, async (req, res) => {
+    try {
+        const activityId = req.params.id;
+        await db.get().collection(collections.DAILY_ACTIVITY_COLLECTION).deleteOne({
+            _id: new ObjectId(activityId)
+        });
+        return res.redirect('/admin/activities');
+    } catch (err) {
+        console.error("Delete activity error:", err);
+        return res.redirect('/admin/activities');
+    }
+});
+
+// ---------------------------------------------
+// STUDENT MARKS & COMPARISON GRAPH ROUTES
+// ---------------------------------------------
+
+// GET /admin/marks
+router.get('/marks', requireAuth, async (req, res) => {
+    try {
+        const database = db.get();
+        const students = await database.collection(collections.STUDENT_COLLECTION).find().sort({ name: 1 }).toArray();
+        const marksRecords = await database.collection(collections.STUDENT_MARKS_COLLECTION).find().sort({ createdAt: -1 }).toArray();
+
+        res.render('admin/marks', {
+            layout: isAjax(req) ? false : 'admin-layout',
+            adminUser: req.session.adminUser,
+            students,
+            marksRecords
+        });
+    } catch (err) {
+        console.error("Marks view error:", err);
+        res.render('admin/marks', {
+            layout: isAjax(req) ? false : 'admin-layout',
+            adminUser: req.session.adminUser,
+            students: [],
+            marksRecords: []
+        });
+    }
+});
+
+// POST /admin/marks/save
+router.post('/admin/marks/save', requireAuth, async (req, res) => {
+    return res.redirect(307, '/admin/marks/save');
+});
+
+router.post('/marks/save', requireAuth, async (req, res) => {
+    try {
+        const { studentId, examTerm, academicYear, overallRemarks } = req.body;
+        const database = db.get();
+
+        const student = await database.collection(collections.STUDENT_COLLECTION).findOne({ studentId });
+        if (!student) {
+            return res.redirect('/admin/marks?error=student_not_found');
+        }
+
+        // Parse arrays from form submission
+        const subjectNames = Array.isArray(req.body.subjectNames) ? req.body.subjectNames : [req.body.subjectNames];
+        const maxMarksArr = Array.isArray(req.body.maxMarks) ? req.body.maxMarks : [req.body.maxMarks];
+        const schoolMarksArr = Array.isArray(req.body.schoolMarks) ? req.body.schoolMarks : [req.body.schoolMarks];
+        const paadashalaMarksArr = Array.isArray(req.body.paadashalaMarks) ? req.body.paadashalaMarks : [req.body.paadashalaMarks];
+        const subjectRemarksArr = Array.isArray(req.body.subjectRemarks) ? req.body.subjectRemarks : [req.body.subjectRemarks];
+
+        let totalMax = 0;
+        let totalSchool = 0;
+        let totalPaadashala = 0;
+
+        const subjects = [];
+        for (let i = 0; i < subjectNames.length; i++) {
+            const maxM = Number(maxMarksArr[i]) || 100;
+            const schM = Number(schoolMarksArr[i]) || 0;
+            const paaM = Number(paadashalaMarksArr[i]) || 0;
+            const diff = parseFloat((paaM - schM).toFixed(1));
+
+            totalMax += maxM;
+            totalSchool += schM;
+            totalPaadashala += paaM;
+
+            subjects.push({
+                name: subjectNames[i],
+                maxMarks: maxM,
+                schoolMarks: schM,
+                paadashalaMarks: paaM,
+                difference: diff,
+                remarks: subjectRemarksArr[i] ? subjectRemarksArr[i].trim() : ''
+            });
+        }
+
+        const schoolPercentage = totalMax > 0 ? parseFloat(((totalSchool / totalMax) * 100).toFixed(1)) : 0;
+        const paadashalaPercentage = totalMax > 0 ? parseFloat(((totalPaadashala / totalMax) * 100).toFixed(1)) : 0;
+        const improvement = parseFloat((paadashalaPercentage - schoolPercentage).toFixed(1));
+
+        const markDoc = {
+            studentId,
+            studentName: student.name,
+            class: student.class,
+            academicYear: academicYear || student.academicYear || '2026-2027',
+            examTerm,
+            subjects,
+            totalMax,
+            totalSchool,
+            totalPaadashala,
+            schoolPercentage,
+            paadashalaPercentage,
+            improvement,
+            remarks: overallRemarks ? overallRemarks.trim() : `പാഠശാലയിലൂടെ ${improvement}% മാർക്ക് വർദ്ധനവ് രേഖപ്പെടുത്തിയിട്ടുണ്ട്.`,
+            updatedAt: new Date()
+        };
+
+        const marksCol = database.collection(collections.STUDENT_MARKS_COLLECTION);
+        await marksCol.updateOne(
+            { studentId, examTerm, academicYear: markDoc.academicYear },
+            { $set: markDoc, $setOnInsert: { createdAt: new Date() } },
+            { upsert: true }
+        );
+
+        // Notify parent
+        const parentPhone = student.parentNo || student.phone;
+        sendNotification(database, {
+            studentId: student.studentId,
+            parentPhone: parentPhone,
+            targetClass: student.class,
+            title: `📊 ${student.name}ന്റെ ${examTerm} പരീക്ഷാ മാർക്കുകൾ`,
+            message: `സ്കൂൾ മാർക്ക്: ${schoolPercentage}%, പാഠശാല മാർക്ക്: ${paadashalaPercentage}% (+${improvement}% വർദ്ധനവ്). പ്രോഗ്രസ്സ് ഗ്രാഫ് പരിശോധിക്കാം.`,
+            type: 'marks',
+            url: '/marks'
+        }).catch(e => console.error("Marks notification error:", e.message));
+
+        return res.redirect('/admin/marks');
+    } catch (err) {
+        console.error("Save marks error:", err);
+        return res.redirect('/admin/marks');
+    }
+});
+
+// POST /admin/marks/delete/:id
+router.post('/marks/delete/:id', requireAuth, async (req, res) => {
+    try {
+        const markId = req.params.id;
+        await db.get().collection(collections.STUDENT_MARKS_COLLECTION).deleteOne({
+            _id: new ObjectId(markId)
+        });
+        return res.redirect('/admin/marks');
+    } catch (err) {
+        console.error("Delete marks error:", err);
+        return res.redirect('/admin/marks');
+    }
+});
+
+// ---------------------------------------------
+// TIMETABLE ROUTES (ADMIN)
+// ---------------------------------------------
+const { getTimetableForClass, getTodaySchedule, sendTodayTimetableNotifications, DAYS } = require('../helpers/timetable-helper');
+
+// GET /admin/timetable
+router.get('/timetable', requireAuth, async (req, res) => {
+    try {
+        const database = db.get();
+        const selectedClass = req.query.class || 'Class 10';
+        const schedule = await getTimetableForClass(database, selectedClass);
+        const todayData = await getTodaySchedule(database, selectedClass);
+
+        const teachers = await database.collection(collections.TEACHER_COLLECTION).find().sort({ name: 1 }).toArray();
+
+        res.render('admin/timetable', {
+            layout: isAjax(req) ? false : 'admin-layout',
+            adminUser: req.session.adminUser,
+            selectedClass,
+            schedule,
+            todayData,
+            teachers,
+            days: DAYS,
+            reminderSuccess: req.query.success === 'reminder_sent',
+            sentCount: req.query.count || 0,
+            reminderDay: req.query.day || ''
+        });
+    } catch (err) {
+        console.error("Timetable admin view error:", err);
+        res.render('admin/timetable', {
+            layout: isAjax(req) ? false : 'admin-layout',
+            adminUser: req.session.adminUser,
+            selectedClass: 'Class 10',
+            schedule: [],
+            todayData: { day: 'Today', periods: [] },
+            teachers: [],
+            days: DAYS
+        });
+    }
+});
+
+// POST /admin/timetable/save-period
+router.post('/timetable/save-period', requireAuth, async (req, res) => {
+    try {
+        const { className, day, time, subject, teacher, books } = req.body;
+        const database = db.get();
+        const col = database.collection(collections.TIMETABLE_COLLECTION);
+
+        let timetableDoc = await col.findOne({ class: className });
+        let schedule = (timetableDoc && timetableDoc.schedule) ? timetableDoc.schedule : [];
+
+        let dayEntry = schedule.find(d => d.day.toLowerCase() === (day || '').toLowerCase());
+        if (!dayEntry) {
+            dayEntry = { day: day, periods: [] };
+            schedule.push(dayEntry);
+        }
+
+        dayEntry.periods.push({
+            time: (time || '').trim(),
+            subject: (subject || '').trim(),
+            teacher: (teacher || '').trim(),
+            books: (books || '').trim() || `${subject} Text Book & Note Book`
+        });
+
+        await col.updateOne(
+            { class: className },
+            { $set: { class: className, schedule, updatedAt: new Date() }, $setOnInsert: { createdAt: new Date() } },
+            { upsert: true }
+        );
+
+        return res.redirect(`/admin/timetable?class=${encodeURIComponent(className)}`);
+    } catch (err) {
+        console.error("Save timetable period error:", err);
+        return res.redirect('/admin/timetable');
+    }
+});
+
+// POST /admin/timetable/delete-period
+router.post('/timetable/delete-period', requireAuth, async (req, res) => {
+    try {
+        const { className, day, periodIndex } = req.body;
+        const database = db.get();
+        const col = database.collection(collections.TIMETABLE_COLLECTION);
+
+        let timetableDoc = await col.findOne({ class: className });
+        if (timetableDoc && timetableDoc.schedule) {
+            const dayEntry = timetableDoc.schedule.find(d => d.day.toLowerCase() === (day || '').toLowerCase());
+            if (dayEntry && dayEntry.periods) {
+                const idx = parseInt(periodIndex, 10);
+                if (!isNaN(idx) && idx >= 0 && idx < dayEntry.periods.length) {
+                    dayEntry.periods.splice(idx, 1);
+                    await col.updateOne(
+                        { class: className },
+                        { $set: { schedule: timetableDoc.schedule, updatedAt: new Date() } }
+                    );
+                }
+            }
+        }
+
+        return res.redirect(`/admin/timetable?class=${encodeURIComponent(className)}`);
+    } catch (err) {
+        console.error("Delete timetable period error:", err);
+        return res.redirect('/admin/timetable');
+    }
+});
+
+// POST /admin/timetable/send-reminder
+router.post('/timetable/send-reminder', requireAuth, async (req, res) => {
+    try {
+        const { className } = req.body;
+        const database = db.get();
+        const result = await sendTodayTimetableNotifications(database, className || null);
+        return res.redirect(`/admin/timetable?class=${encodeURIComponent(className || 'Class 10')}&success=reminder_sent&count=${result.sent}&day=${encodeURIComponent(result.day)}`);
+    } catch (err) {
+        console.error("Send timetable reminder error:", err);
+        return res.redirect('/admin/timetable');
     }
 });
 

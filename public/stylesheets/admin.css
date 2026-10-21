@@ -1665,59 +1665,139 @@ textarea.finput {
 }
 
 /* ============================================================
-   ADMIN FULLSCREEN OFFCANVAS DRAWER (100% NON-TRANSPARENT & RESPONSIVE)
+   ADMIN FULLSCREEN DESKTOP & RESPONSIVE OFFCANVAS LAYOUT
    ============================================================ */
-.main {
-    margin-left: 0 !important;
+
+/* Force .app to break out of any mobile style.css constraints */
+body .app,
+div.app {
+    max-width: 100% !important;
     width: 100% !important;
-    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 100vh;
 }
 
-.menu-btn {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+#admin-content {
+    width: 100% !important;
+    min-height: calc(100vh - 72px);
+    padding-bottom: 2.5rem;
 }
 
-.sidebar {
-    position: fixed !important;
-    inset: 0 auto 0 0 !important;
-    width: 280px !important;
-    max-width: 85vw !important;
-    height: 100vh !important;
-    background: #94d0f5 !important;
-    background-color: #94d0f5 !important;
-    color: var(--sidebar-text) !important;
-    display: flex !important;
-    flex-direction: column !important;
-    z-index: 2000 !important;
-    transform: translateX(-105%) !important;
-    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    box-shadow: none !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+/* Page containers width scaling */
+.dashboard-wrapper,
+.students-page-container,
+.teacher-opinions-page,
+.messages-page,
+.marks-page,
+.activities-page,
+.timetable-page,
+.container-fluid {
+    width: 100% !important;
+    max-width: 1600px !important;
+    margin: 0 auto !important;
 }
 
-body.sidebar-open .sidebar,
-.sidebar.open {
-    transform: translateX(0) !important;
-    box-shadow: 4px 0 35px rgba(0, 0, 0, 0.55) !important;
+/* Desktop layout (>= 1025px): Permanent sleek dark sidebar, wide spacious content */
+@media (min-width: 1025px) {
+    .sidebar {
+        position: fixed !important;
+        inset: 0 auto 0 0 !important;
+        width: 260px !important;
+        height: 100vh !important;
+        background: #0b2230 !important;
+        background-color: #0b2230 !important;
+        color: #93a9b7 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        z-index: 60 !important;
+        transform: translateX(0) !important;
+        box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08) !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+    }
+
+    .sidebar-close-btn {
+        display: none !important;
+    }
+
+    .sidebar-overlay {
+        display: none !important;
+    }
+
+    .main {
+        margin-left: 260px !important;
+        width: calc(100% - 260px) !important;
+        min-width: 0 !important;
+    }
+
+    .menu-btn {
+        display: none !important;
+    }
+
+    .topbar {
+        padding: 0 32px !important;
+    }
+
+    .dashboard-wrapper,
+    .students-page-container,
+    .marks-page,
+    .activities-page,
+    .timetable-page {
+        padding: 2rem 2.25rem !important;
+    }
 }
 
-.sidebar-overlay {
-    position: fixed !important;
-    inset: 0 !important;
-    background: rgba(10, 20, 28, 0.65) !important;
-    backdrop-filter: blur(2px) !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-    transition: opacity 0.25s ease !important;
-    z-index: 1990 !important;
-}
+/* Mobile & Tablet layout (<= 1024px): Offcanvas sliding drawer */
+@media (max-width: 1024px) {
+    .main {
+        margin-left: 0 !important;
+        width: 100% !important;
+        min-width: 0 !important;
+    }
 
-body.sidebar-open .sidebar-overlay,
-.sidebar-overlay.active {
-    opacity: 1 !important;
-    pointer-events: auto !important;
-}
+    .menu-btn {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
 
+    .sidebar {
+        position: fixed !important;
+        inset: 0 auto 0 0 !important;
+        width: 280px !important;
+        max-width: 85vw !important;
+        height: 100vh !important;
+        background: #0b2230 !important;
+        background-color: #0b2230 !important;
+        color: #93a9b7 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        z-index: 2000 !important;
+        transform: translateX(-105%) !important;
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        box-shadow: none !important;
+    }
+
+    body.sidebar-open .sidebar,
+    .sidebar.open {
+        transform: translateX(0) !important;
+        box-shadow: 4px 0 35px rgba(0, 0, 0, 0.55) !important;
+    }
+
+    .sidebar-overlay {
+        position: fixed !important;
+        inset: 0 !important;
+        background: rgba(10, 20, 28, 0.65) !important;
+        backdrop-filter: blur(2px) !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        transition: opacity 0.25s ease !important;
+        z-index: 1990 !important;
+    }
+
+    body.sidebar-open .sidebar-overlay,
+    .sidebar-overlay.active {
+        opacity: 1 !important;
+        pointer-events: auto !important;
+    }
+}

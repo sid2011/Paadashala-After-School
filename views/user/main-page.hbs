@@ -53,6 +53,27 @@
 
   <section class="section" style="padding-top: 1.25rem;">
 
+    <!-- PUSH NOTIFICATION OPT-IN BANNER (IF NOT YET GRANTED) -->
+    <div id="pushPermissionBanner" style="display: none; background: linear-gradient(135deg, #eff6ff, #dbeafe); border: 1.5px solid #93c5fd; border-radius: 1.25rem; padding: 0.85rem 1.15rem; margin-bottom: 1.25rem; box-shadow: var(--shadow-tile);">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div style="width: 40px; height: 40px; border-radius: 50%; background: #2563eb; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0;">
+            <i class="bi bi-bell-fill"></i>
+          </div>
+          <div>
+            <strong style="display: block; font-size: 0.9rem; color: #1e3a8a;">തത്സമയ അറിയിപ്പുകൾ നേടാം</strong>
+            <small style="color: #3b82f6; font-size: 0.75rem;">അറ്റൻഡൻസും ആക്ടിവിറ്റികളും ഫോൺ സ്ക്രീനിൽ നോട്ടിഫിക്കേഷനായി ലഭിക്കാൻ</small>
+          </div>
+        </div>
+        <button
+          type="button"
+          onclick="requestNotificationPermission && requestNotificationPermission()"
+          style="background: #2563eb; color: #fff; border: none; border-radius: 9999px; padding: 0.4rem 0.85rem; font-size: 0.78rem; font-weight: 700; cursor: pointer; white-space: nowrap;">
+          Enable
+        </button>
+      </div>
+    </div>
+
     <!-- LATEST BROADCAST ALERT (IF ANY) -->
     {{#if latestNotice}}
       <a href="/messages" style="text-decoration: none; color: inherit; display: block; margin-bottom: 1.25rem;">
@@ -96,7 +117,23 @@
           <span class="tile-label">Attendance</span>
         </a>
 
-        <!-- 3. MESSAGES & NOTICES -->
+        <!-- 3. ACTIVITIES & CLASSWORK -->
+        <a href="/activities" class="tile">
+          <span class="tile-icon" style="background: #e0f2fe; color: #0284c7;">
+            <i class="bi bi-journal-check" style="font-size: 1.75rem;"></i>
+          </span>
+          <span class="tile-label">Activities</span>
+        </a>
+
+        <!-- 4. MARKS & REPORT GRAPH -->
+        <a href="/marks" class="tile">
+          <span class="tile-icon" style="background: #ecfdf5; color: #059669;">
+            <i class="bi bi-bar-chart-line-fill" style="font-size: 1.75rem;"></i>
+          </span>
+          <span class="tile-label">Marks</span>
+        </a>
+
+        <!-- 5. MESSAGES & NOTICES -->
         <a href="/messages" class="tile">
           <span class="tile-icon" style="background: #ffedd5; color: #ea580c;">
             <i class="bi bi-chat-left-dots-fill" style="font-size: 1.75rem;"></i>
@@ -104,7 +141,7 @@
           <span class="tile-label">Messages</span>
         </a>
 
-        <!-- 4. TEACHER OPINION -->
+        <!-- 6. TEACHER OPINION -->
         <a href="/teacher-opinion" class="tile">
           <span class="tile-icon" style="background: #f3e8ff; color: #9333ea;">
             <i class="bi bi-mic-fill" style="font-size: 1.75rem;"></i>
@@ -112,7 +149,7 @@
           <span class="tile-label">Teacher Opinion</span>
         </a>
 
-        <!-- 5. FEES -->
+        <!-- 7. FEES -->
         <a href="/fees" class="tile">
           <span class="tile-icon" style="background: #fef3c7; color: #d97706;">
             <i class="bi bi-credit-card-2-front-fill" style="font-size: 1.75rem;"></i>
@@ -120,7 +157,7 @@
           <span class="tile-label">Fees</span>
         </a>
 
-        <!-- 6. TIMETABLE -->
+        <!-- 8. TIMETABLE -->
         <a href="/timetable" class="tile">
           <span class="tile-icon" style="background: #ede9fe; color: #7c3aed;">
             <i class="bi bi-clock-history" style="font-size: 1.75rem;"></i>
@@ -128,7 +165,7 @@
           <span class="tile-label">Timetable</span>
         </a>
 
-        <!-- 7. TECHNICAL SUPPORT -->
+        <!-- 9. TECHNICAL SUPPORT -->
         <a href="/technical-support" class="tile">
           <span class="tile-icon" style="background: #e2e8f0; color: #475569;">
             <i class="bi bi-headset" style="font-size: 1.75rem;"></i>
@@ -136,7 +173,7 @@
           <span class="tile-label">Tech Support</span>
         </a>
 
-        <!-- 8. INSTALL APP (PWA) -->
+        <!-- 10. INSTALL APP (PWA) -->
         <a href="javascript:void(0)" id="pwaInstallTile" class="tile" onclick="window.triggerPwaInstallFromTile && window.triggerPwaInstallFromTile()">
           <span class="tile-icon" style="background: #e0e7ff; color: #4338ca;">
             <i class="bi bi-download" style="font-size: 1.75rem;"></i>

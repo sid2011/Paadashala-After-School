@@ -1,93 +1,63 @@
-// Paadashala Service Worker (PWA)
-const CACHE_NAME = 'paadashala-cache-v1';
+// Paadashala Service Worker for Background Push Notifications
+self.addEventListener('install', function (event) {
+  self.skipWaiting();
+});
 
-const STATIC_ASSETS = [
-  '/',
-  '/manifest.json',
-  '/stylesheets/style.css',
-  '/stylesheets/admin.css',
-  '/stylesheets/attendance.css',
-  '/images/apple-touch-icon.png',
-  '/images/web-app-manifest-192x192.png',
-  '/images/web-app-manifest-512x512.png',
-  '/images/favicon-96x96.png',
-  '/javascript/pwa.js',
-  '/javascript/admin.js'
-];
+self.addEventListener('activate', function (event) {
+  event.waitUntil(clients.claim());
+});
 
-// Install Event
-self.addEventListener('install', (event) => {
+self.addEventListener('push', function (event) {
+  let title = 'Paadashala After School';
+  let body = 'നിങ്ങൾക്ക് പുതിയ നോട്ടിഫിക്കേഷൻ വന്നിട്ടുണ്ട്.';
+  let icon = '/images/apple-touch-icon.png';
+  let badge = '/images/favicon-96x96.png';
+  let url = '/';
+
+  if (event.data) {
+    try {
+      const data = event.data.json();
+      title = data.title || title;
+      body = data.body || body;
+      icon = data.icon || icon;
+      badge = data.badge || badge;
+      url = data.url || url;
+    } catch (e) {
+      body = event.data.text();
+    }
+  }
+
+  const options = {
+    body: body,
+    icon: icon,
+    badge: badge,
+    vibrate: [200, 100, 200],
+    data: { url: url },
+    actions: [
+      { action: 'open', title: 'തുറക്കുക (Open)' }
+    ]
+  };
+
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS).catch((err) => {
-        console.warn('PWA: Some static assets failed to cache during install:', err);
-      });
-    }).then(() => self.skipWaiting())
+    self.registration.showNotification(title, options)
   );
 });
 
-// Activate Event: Clean up older caches
-self.addEventListener('activate', (event) => {
+self.addEventListener('notificationclick', function (event) {
+  event.notification.close();
+  const targetUrl = (event.notification.data && event.notification.data.url) ? event.notification.data.url : '/';
+
   event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      );
-    }).then(() => self.clients.claim())
-  );
-});
-
-// Fetch Event
-self.addEventListener('fetch', (event) => {
-  const request = event.request;
-
-  // Only handle GET requests
-  if (request.method !== 'GET') {
-    return;
-  }
-
-  // Handle HTML navigation (Network First with Cache fallback)
-  if (request.mode === 'navigate') {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          if (response && response.status === 200) {
-            const copy = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
-          }
-          return response;
-        })
-        .catch(() => {
-          return caches.match(request).then((cached) => cached || caches.match('/'));
-        })
-    );
-    return;
-  }
-
-  // Handle static assets (Cache First, then Network fallback)
-  event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      if (cachedResponse) {
-        // Fetch in background to update cache (stale-while-revalidate)
-        fetch(request).then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, networkResponse));
-          }
-        }).catch(() => {});
-        return cachedResponse;
-      }
-
-      return fetch(request).then((networkResponse) => {
-        if (networkResponse && networkResponse.status === 200 && request.url.startsWith(self.location.origin)) {
-          const copy = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (clientList) {
+      for (let i = 0; i < clientList.length; i++) {
+        const client = clientList[i];
+        if (client.url === targetUrl && 'focus' in client) {
+          return client.focus();
         }
-        return networkResponse;
-      });
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
     })
   );
 });

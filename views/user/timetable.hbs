@@ -1,51 +1,232 @@
 <main class="app">
 
+  <!-- HEADER -->
   <header class="header" style="padding-bottom: 1.5rem;">
     <div class="subpage-header">
       <a href="/" class="back-btn">
-        <i class="bi bi-chevron-left"></i> Back
+        <i class="bi bi-chevron-left"></i> Dashboard
       </a>
-      <p class="brand-name" style="margin: 0; font-size: 1.1rem; color: #fff;">Timetable</p>
-      <div style="width: 60px;"></div>
+      <p class="brand-name" style="margin: 0; font-size: 1.1rem; color: #fff;">Class Timetable</p>
+
+      {{#if (gt allStudents.length 1)}}
+        <select
+          onchange="window.location.href='/timetable?studentId=' + this.value"
+          style="background: rgba(255, 255, 255, 0.2); color: #fff; border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 9999px; padding: 0.25rem 0.6rem; font-size: 0.75rem; font-weight: 600; outline: none; cursor: pointer;">
+          {{#each allStudents}}
+            <option value="{{this.studentId}}" style="color: #000;" {{#if (eq this.studentId ../student.studentId)}}selected{{/if}}>
+              {{this.name}}
+            </option>
+          {{/each}}
+        </select>
+      {{else}}
+        <div style="width: 60px;"></div>
+      {{/if}}
     </div>
 
     <div style="margin-top: 1rem;">
       <h1 style="font-size: 1.5rem; color: #fff; margin: 0; line-height: 1.2;">
-        Batch Timetable
+        {{#if student.name}}{{student.name}}{{else}}Student{{/if}}'s Schedule
       </h1>
       <p style="color: rgba(255,255,255,0.85); font-size: 0.85rem; margin: 0.25rem 0 0;">
-        {{student.class}} • {{student.shift}} Shift
+        {{student.class}} • {{#if student.shift}}{{student.shift}} Shift{{else}}Regular Shift{{/if}}
       </p>
     </div>
   </header>
 
   <section class="section" style="padding-top: 1.25rem;">
 
+    <!-- 1. TODAY'S SCHEDULE & BOOKS PACKING CHECKLIST -->
+    <div class="card-box" style="background: linear-gradient(145deg, #ffffff, #f0fdf4); border: 2px solid #bbf7d0; box-shadow: 0 10px 25px -8px rgba(22, 101, 52, 0.15); margin-bottom: 1.25rem;">
+      <div class="card-box-header" style="border-bottom: 1px dashed #86efac; padding-bottom: 0.75rem;">
+        <div class="card-box-title" style="color: #166534;">
+          <i class="bi bi-backpack4-fill" style="color: #15803d; font-size: 1.25rem;"></i>
+          <span>ഇന്ന് കൊണ്ടുവരേണ്ട പുസ്തകങ്ങൾ</span>
+        </div>
+        <span class="badge" style="background: #15803d; color: #fff; font-size: 0.75rem; font-weight: 700;">
+          {{todayData.day}}
+        </span>
+      </div>
+
+      {{#if todayData.periods.length}}
+        <div style="margin-top: 0.75rem;">
+          <p style="font-size: 0.82rem; color: #166534; margin-bottom: 0.75rem;">
+            സ്കൂൾ വിട്ട് പാഠശാലയിലേക്ക് വരുമ്പോൾ താഴെ കാണുന്ന വിഷയങ്ങളുടെ ടെക്സ്റ്റ് ബുക്കുകളും നോട്ട് ബുക്കുകളും എടുത്തു നൽകുമല്ലോ:
+          </p>
+
+          <div style="display: flex; flex-direction: column; gap: 0.65rem;">
+            {{#each todayData.periods}}
+              <label style="display: flex; align-items: flex-start; gap: 0.75rem; background: #ffffff; padding: 0.75rem 0.85rem; border-radius: 0.85rem; border: 1.5px solid #dcfce7; cursor: pointer; transition: all 0.2s ease;">
+                <input
+                  type="checkbox"
+                  class="book-checkbox"
+                  id="chk_{{../todayData.day}}_{{@index}}"
+                  style="width: 1.25rem; height: 1.25rem; accent-color: #16a34a; margin-top: 0.15rem; cursor: pointer;"
+                  onchange="toggleBookCheck(this)">
+                <div style="flex: 1;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.2rem;">
+                    <strong style="font-size: 0.95rem; color: #0f172a;">{{this.subject}}</strong>
+                    <span style="font-size: 0.72rem; color: #15803d; font-weight: 700; background: #dcfce7; padding: 0.15rem 0.45rem; border-radius: 9999px;">
+                      {{this.time}}
+                    </span>
+                  </div>
+                  <div class="book-name-label" style="font-size: 0.82rem; color: #475569;">
+                    <i class="bi bi-book-half me-1" style="color: #0284c7;"></i>
+                    <span>{{this.books}}</span>
+                  </div>
+                  {{#if this.teacher}}
+                    <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 0.2rem;">
+                      Mentor: {{this.teacher}}
+                    </div>
+                  {{/if}}
+                </div>
+              </label>
+            {{/each}}
+          </div>
+        </div>
+      {{else}}
+        <div style="text-align: center; padding: 1.5rem 1rem;">
+          {{#if todayData.isSunday}}
+            <i class="bi bi-sun" style="font-size: 2rem; color: #f59e0b; display: block; margin-bottom: 0.5rem;"></i>
+            <strong style="color: #334155; font-size: 0.95rem;">ഇന്ന് ഞായറാഴ്ചയാണ് (Sunday)</strong>
+            <p style="color: #64748b; font-size: 0.82rem; margin: 0.25rem 0 0;">പാഠശാലയ്ക്ക് ഇന്ന് അവധിയാണ്. പുസ്തകങ്ങൾ കൊണ്ടുവരേണ്ടതില്ല.</p>
+          {{else}}
+            <i class="bi bi-calendar-check" style="font-size: 2rem; color: #10b981; display: block; margin-bottom: 0.5rem;"></i>
+            <strong style="color: #334155; font-size: 0.95rem;">ഇന്നത്തേക്ക് പ്രത്യേക ക്ലാസുകൾ ഷെഡ്യൂൾ ചെയ്തിട്ടില്ല</strong>
+          {{/if}}
+        </div>
+      {{/if}}
+    </div>
+
+    <!-- 2. FULL WEEKLY TIMETABLE -->
     <div class="card-box">
       <div class="card-box-header">
         <div class="card-box-title">
-          <i class="bi bi-clock-history" style="color: #7c3aed;"></i>
-          <span>Daily Schedule</span>
+          <i class="bi bi-calendar3" style="color: #7c3aed;"></i>
+          <span>Weekly Timetable (ആഴ്ചയിലെ ക്ലാസുകൾ)</span>
         </div>
-        <span class="badge" style="background: #ede9fe; color: #6d28d9; font-size: 0.75rem; font-weight: 700;">Evening</span>
+        <span class="badge" style="background: #ede9fe; color: #6d28d9; font-size: 0.75rem; font-weight: 700;">
+          {{student.class}}
+        </span>
       </div>
 
-      <div class="info-list">
-        <div class="info-item">
-          <span class="label"><i class="bi bi-sun"></i> 5:30 PM – 6:15 PM</span>
-          <span class="val">Mathematics & Problem Solving</span>
-        </div>
-        <div class="info-item">
-          <span class="label"><i class="bi bi-book"></i> 6:15 PM – 7:00 PM</span>
-          <span class="val">Science & Homework Review</span>
-        </div>
-        <div class="info-item">
-          <span class="label"><i class="bi bi-check-circle"></i> 7:00 PM – 7:30 PM</span>
-          <span class="val">Doubt Clearance & Mentorship</span>
-        </div>
+      <!-- DAY TABS -->
+      <div style="display: flex; gap: 0.4rem; overflow-x: auto; padding-bottom: 0.75rem; margin-bottom: 0.75rem; -webkit-overflow-scrolling: touch;">
+        {{#each schedule}}
+          <button
+            type="button"
+            class="day-tab-btn"
+            data-day="{{this.day}}"
+            onclick="switchDayTimetable('{{this.day}}')"
+            style="border: 1px solid #cbd5e1; background: #ffffff; color: #475569; padding: 0.4rem 0.8rem; border-radius: 9999px; font-size: 0.78rem; font-weight: 700; white-space: nowrap; cursor: pointer;">
+            {{this.day}}
+          </button>
+        {{/each}}
       </div>
+
+      <!-- DAY CONTENT CONTAINERS -->
+      {{#each schedule}}
+        <div class="day-schedule-panel" id="panel_{{this.day}}" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <strong style="color: #1e293b; font-size: 0.95rem;">{{this.day}} Schedule</strong>
+            <span style="font-size: 0.75rem; color: #64748b;">{{this.periods.length}} Classes</span>
+          </div>
+
+          {{#if this.periods.length}}
+            <div style="display: flex; flex-direction: column; gap: 0.65rem;">
+              {{#each this.periods}}
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.85rem; padding: 0.75rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.25rem;">
+                    <strong style="font-size: 0.95rem; color: #0f172a;">{{this.subject}}</strong>
+                    <span style="font-size: 0.72rem; font-weight: 700; color: #7c3aed; background: #ede9fe; padding: 0.15rem 0.5rem; border-radius: 9999px;">
+                      {{this.time}}
+                    </span>
+                  </div>
+
+                  {{#if this.teacher}}
+                    <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 0.35rem;">
+                      <i class="bi bi-person-fill me-1"></i>Mentor: <strong>{{this.teacher}}</strong>
+                    </div>
+                  {{/if}}
+
+                  <div style="font-size: 0.8rem; color: #334155; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 0.4rem 0.6rem;">
+                    <i class="bi bi-journal-bookmark-fill me-1" style="color: #eab308;"></i>
+                    <strong>Required:</strong> {{this.books}}
+                  </div>
+                </div>
+              {{/each}}
+            </div>
+          {{else}}
+            <div style="text-align: center; padding: 1.5rem; color: #94a3b8; font-size: 0.85rem;">
+              ഈ ദിവസത്തേക്ക് ക്ലാസുകൾ നൽകിയിട്ടില്ല.
+            </div>
+          {{/if}}
+        </div>
+      {{/each}}
     </div>
 
   </section>
 
 </main>
+
+<script>
+function switchDayTimetable(day) {
+    document.querySelectorAll('.day-tab-btn').forEach(btn => {
+        if (btn.getAttribute('data-day') === day) {
+            btn.style.background = '#7c3aed';
+            btn.style.color = '#ffffff';
+            btn.style.borderColor = '#7c3aed';
+        } else {
+            btn.style.background = '#ffffff';
+            btn.style.color = '#475569';
+            btn.style.borderColor = '#cbd5e1';
+        }
+    });
+
+    document.querySelectorAll('.day-schedule-panel').forEach(panel => {
+        panel.style.display = 'none';
+    });
+
+    const activePanel = document.getElementById('panel_' + day);
+    if (activePanel) {
+        activePanel.style.display = 'block';
+    }
+}
+
+function toggleBookCheck(chk) {
+    const parentLabel = chk.closest('label');
+    if (chk.checked) {
+        if (parentLabel) {
+            parentLabel.style.background = '#dcfce7';
+            parentLabel.style.borderColor = '#86efac';
+        }
+        localStorage.setItem(chk.id, 'checked');
+    } else {
+        if (parentLabel) {
+            parentLabel.style.background = '#ffffff';
+            parentLabel.style.borderColor = '#dcfce7';
+        }
+        localStorage.removeItem(chk.id);
+    }
+}
+
+// Load saved checklist state
+document.addEventListener('DOMContentLoaded', function() {
+    // Restore checklist states
+    document.querySelectorAll('.book-checkbox').forEach(chk => {
+        if (localStorage.getItem(chk.id) === 'checked') {
+            chk.checked = true;
+            const parentLabel = chk.closest('label');
+            if (parentLabel) {
+                parentLabel.style.background = '#dcfce7';
+                parentLabel.style.borderColor = '#86efac';
+            }
+        }
+    });
+
+    // Default to today's day tab, or Monday
+    const todayName = "{{todayData.day}}" || "Monday";
+    const validDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const initialDay = validDays.includes(todayName) ? todayName : 'Monday';
+    switchDayTimetable(initialDay);
+});
+</script>

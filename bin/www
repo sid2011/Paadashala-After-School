@@ -7,6 +7,7 @@
 var app = require('../app');
 var db = require('../config/connections');
 const { ensureFeeIndexes } = require('../helpers/fee-helper');
+const { initTimetableAutoScheduler } = require('../helpers/timetable-helper');
 var debug = require('debug')('paadashala-after-school:server');
 var http = require('http');
 var port = normalizePort(process.env.PORT || '3000');
@@ -25,6 +26,7 @@ db.connect()
   .then(async () => {
     try {
       await ensureFeeIndexes(db.get());
+      initTimetableAutoScheduler(db.get());
     } catch (e) {
       console.error("Index init notice:", e.message);
     }

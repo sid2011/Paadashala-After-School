@@ -39,6 +39,9 @@ document.addEventListener("click", async function (e) {
             // Re-initialize page specific hooks
             initAttendancePage();
             initTeacherOpinionPage();
+            if (typeof initMarksPage === 'function') initMarksPage();
+            if (typeof initActivitiesPage === 'function') initActivitiesPage();
+            if (typeof initTimetablePage === 'function') initTimetablePage();
         }
     } catch (error) {
         console.error("Navigation error:", error);
@@ -161,6 +164,7 @@ document.addEventListener("click", async function (e) {
     const date = document.querySelector("#attendanceDate")?.value;
     const grade = document.querySelector("#classSelect")?.value;
     const shift = document.querySelector("#shiftSelect")?.value || "all";
+    const subject = document.querySelector("#subjectSelect")?.value || "General";
     const tbody = document.querySelector("#attendanceTableBody");
     const summary = document.querySelector("#loadedSummary");
 
@@ -174,7 +178,7 @@ document.addEventListener("click", async function (e) {
     button.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Loading...';
 
     try {
-        const url = `/admin/students/loadAttendance?date=${encodeURIComponent(date)}&grade=${encodeURIComponent(grade)}&shift=${encodeURIComponent(shift)}`;
+        const url = `/admin/students/loadAttendance?date=${encodeURIComponent(date)}&grade=${encodeURIComponent(grade)}&shift=${encodeURIComponent(shift)}&subject=${encodeURIComponent(subject)}`;
         const response = await fetch(url);
         if (!response.ok) throw new Error("Failed to load students");
 
@@ -187,7 +191,7 @@ document.addEventListener("click", async function (e) {
                         <td colspan="6" class="text-center py-5 text-muted">
                             <i class="bi bi-info-circle fs-2 text-secondary d-block mb-2"></i>
                             <div>ഈ ക്ലാസ്സിലും ഷിഫ്റ്റിലും കുട്ടികളെ കണ്ടെത്തിയില്ല.</div>
-                            <small class="text-muted">${grade} (${shift})</small>
+                            <small class="text-muted">${grade} (${shift}) - ${subject}</small>
                         </td>
                     </tr>
                 `;
@@ -204,10 +208,13 @@ document.addEventListener("click", async function (e) {
                         : '<span class="badge bg-light text-muted">General</span>';
 
                     return `
-                        <tr data-student-id="${std.studentId}" data-student-name="${std.name}" data-class="${std.class}" data-shift="${std.shift}" data-status="${isPresent ? 'present' : 'absent'}">
+                        <tr data-student-id="${std.studentId}" data-student-name="${std.name}" data-class="${std.class}" data-shift="${std.shift}" data-subject="${subject}" data-status="${isPresent ? 'present' : 'absent'}">
                             <td class="text-muted fw-bold">${index + 1}</td>
                             <td><span class="badge bg-light text-dark border font-monospace">${std.studentId}</span></td>
-                            <td><strong class="text-dark">${std.name}</strong></td>
+                            <td>
+                                <strong class="text-dark">${std.name}</strong>
+                                <small class="d-block text-muted font-monospace"><i class="bi bi-book me-1"></i>${subject}</small>
+                            </td>
                             <td><span class="badge bg-secondary-subtle text-secondary">${std.class}</span></td>
                             <td>${shiftBadge}</td>
                             <td class="text-center">
@@ -228,7 +235,7 @@ document.addEventListener("click", async function (e) {
                     `;
                 }).join("");
 
-                if (summary) summary.textContent = `${students.length} Students loaded (${grade} - ${shift})`;
+                if (summary) summary.textContent = `${students.length} Students loaded (${grade} - ${shift} - ${subject})`;
             }
         }
         updateAttendanceCounters();
@@ -288,6 +295,7 @@ document.addEventListener("click", async function (e) {
 
     const rows = document.querySelectorAll("#attendanceTableBody tr[data-student-id]");
     const date = document.querySelector("#attendanceDate")?.value;
+    const subject = document.querySelector("#subjectSelect")?.value || "General";
     const alertBox = document.querySelector("#attendanceAlert");
 
     if (rows.length === 0) {
@@ -308,13 +316,14 @@ document.addEventListener("click", async function (e) {
             studentName: row.dataset.studentName,
             class: row.dataset.class,
             shift: row.dataset.shift,
+            subject: row.dataset.subject || subject,
             status: row.dataset.status || "present"
         });
     });
 
     saveBtn.disabled = true;
     const origText = saveBtn.innerHTML;
-    saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving...';
+    saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving & Notifying...';
 
     try {
         const response = await fetch('/admin/students/attendance', {
@@ -324,13 +333,15 @@ document.addEventListener("click", async function (e) {
         });
 
         if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+        const result = await response.json();
 
         if (alertBox) {
+            alertBox.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i> ${subject} ഹാജർ വിജയകരമായി രേഖപ്പെടുത്തി! പാരന്റ്സിന് നോട്ടിഫിക്കേഷൻ അയച്ചു.`;
             alertBox.style.display = "block";
             alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            setTimeout(() => { alertBox.style.display = "none"; }, 4000);
+            setTimeout(() => { alertBox.style.display = "none"; }, 5000);
         } else {
-            alert("ഹാജർ വിജയകരമായി രേഖപ്പെടുത്തി! (Attendance Saved)");
+            alert(`${subject} ഹാജർ വിജയകരമായി രേഖപ്പെടുത്തി! പാരന്റ്സിന് നോട്ടിഫിക്കേഷൻ അയച്ചു.`);
         }
     } catch (err) {
         console.error("Save attendance error:", err);

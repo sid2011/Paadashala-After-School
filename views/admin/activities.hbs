@@ -1,0 +1,279 @@
+<div class="activities-page p-3 p-md-4">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1 class="page-title m-0">Daily Class Activities & Homework</h1>
+            <p class="text-muted m-0">ക്ലാസ്സുകളിൽ പഠിപ്പിച്ച കാര്യങ്ങളും ഹോംവർക്കുകളും രക്ഷിതാക്കൾക്ക് പങ്കുവെക്കുക</p>
+        </div>
+
+        <button
+            class="btn btn-primary d-flex align-items-center gap-2"
+            data-bs-toggle="modal"
+            data-bs-target="#newActivityModal">
+            <i class="bi bi-plus-circle-fill"></i>
+            <span>Add Class Activity</span>
+        </button>
+    </div>
+
+    <!-- PUBLISH NEW ACTIVITY MODAL -->
+    <div class="modal fade" id="newActivityModal" tabindex="-1" aria-labelledby="newActivityModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 18px; border: none; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.15);">
+                <form action="/admin/activities/create" method="POST">
+                    <div class="modal-header bg-light border-bottom px-4 py-3">
+                        <div>
+                            <h4 class="modal-title fw-bold text-dark m-0" id="newActivityModalLabel">
+                                <i class="bi bi-journal-text text-primary me-2"></i> Record Daily Activity
+                            </h4>
+                            <small class="text-muted">ക്ലാസ്സിൽ ചെയ്ത പ്രവർത്തനങ്ങൾ ചേർക്കുക (രക്ഷിതാക്കൾക്ക് നോട്ടിഫിക്കേഷൻ പോകും)</small>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body p-4">
+                        <div class="row g-3 mb-3">
+                            <div class="col-12 col-md-3">
+                                <label class="form-label fw-semibold text-secondary small">
+                                    Date <span class="text-danger">*</span>
+                                </label>
+                                <input type="date" class="form-control" name="date" id="activityDateInput" required>
+                            </div>
+
+                            <div class="col-12 col-md-3">
+                                <label class="form-label fw-semibold text-secondary small">
+                                    Class / Standard <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" name="class" id="activityClassSelect" required>
+                                    <option value="Class 1">Class 1</option>
+                                    <option value="Class 2">Class 2</option>
+                                    <option value="Class 3">Class 3</option>
+                                    <option value="Class 4">Class 4</option>
+                                    <option value="Class 5">Class 5</option>
+                                    <option value="Class 6">Class 6</option>
+                                    <option value="Class 7">Class 7</option>
+                                    <option value="Class 8">Class 8</option>
+                                    <option value="Class 9">Class 9</option>
+                                    <option value="Class 10" selected>Class 10</option>
+                                </select>
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <label class="form-label fw-semibold text-secondary small">
+                                    Target Student (വിദ്യാർത്ഥി) <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" name="studentId" id="activityStudentSelect">
+                                    <option value="ALL">All Students in Class (മുഴുവൻ കുട്ടികൾക്കും)</option>
+                                    {{#each students}}
+                                        <option value="{{this.studentId}}" data-class="{{this.class}}">
+                                            {{this.name}} ({{this.studentId}} - Class {{this.class}})
+                                        </option>
+                                    {{/each}}
+                                </select>
+                                <small class="text-muted" style="font-size: 0.75rem;">ഒരു നിർദ്ദിഷ്ട കുട്ടിക്ക് മാത്രമായോ ക്ലാസിലെ മുഴുവൻ കുട്ടികൾക്കോ അയക്കാം</small>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-12 col-md-4">
+                                <label class="form-label fw-semibold text-secondary small">
+                                    Subject (വിഷയം) <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" name="subject" required>
+                                    <option value="Mathematics" selected>Mathematics (കണക്ക്)</option>
+                                    <option value="Physics">Physics (ഫിസിക്സ്)</option>
+                                    <option value="Chemistry">Chemistry (കെമിസ്ട്രി)</option>
+                                    <option value="Biology">Biology (ബയോളജി)</option>
+                                    <option value="Science">Science (സയൻസ്)</option>
+                                    <option value="English">English</option>
+                                    <option value="Social Science">Social Science (സാമൂഹ്യശാസ്ത്രം)</option>
+                                    <option value="Malayalam">Malayalam (മലയാളം)</option>
+                                    <option value="Hindi">Hindi (ഹിന്ദി)</option>
+                                </select>
+                            </div>
+
+                            <div class="col-12 col-md-4">
+                                <label class="form-label fw-semibold text-secondary small">
+                                    Batch / Shift
+                                </label>
+                                <select class="form-select" name="shift">
+                                    <option value="All Batches" selected>All Batches (എല്ലാ ബാച്ചുകളും)</option>
+                                    <option value="Morning">Morning Shift</option>
+                                    <option value="Afternoon">Afternoon Shift</option>
+                                    <option value="Evening">Evening Shift</option>
+                                </select>
+                            </div>
+
+                            <div class="col-12 col-md-4">
+                                <label class="form-label fw-semibold text-secondary small">
+                                    Teacher Name (അധ്യാപകൻ) <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" name="teacherName" required>
+                                    {{#if teachers.length}}
+                                        {{#each teachers}}
+                                            <option value="{{this.name}}">{{this.name}} ({{this.subject}})</option>
+                                        {{/each}}
+                                    {{else}}
+                                        <option value="Sri. Rajesh Kumar">Sri. Rajesh Kumar (Mathematics)</option>
+                                        <option value="Smt. Deepa Nair">Smt. Deepa Nair (Science)</option>
+                                        <option value="Sri. Anoop Thomas">Sri. Anoop Thomas (Social Science)</option>
+                                    {{/if}}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary small">
+                                Topic / Lesson Title (പാഠഭാഗം) <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" name="topic" placeholder="e.g. Chemical Reactions & Equations / രസതന്ത്ര സമവാക്യങ്ങൾ" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary small">
+                                <i class="bi bi-journal-text text-primary me-1"></i> Notes Given (നോട്ട്സ് നൽകിയത് / പഠിപ്പിച്ച കാര്യങ്ങൾ) <span class="text-danger">*</span>
+                            </label>
+                            <textarea class="form-control" name="notes" rows="3" placeholder="ഉദാ: കെമിസ്ട്രി അദ്ധ്യായം 2 - പ്രധാന ആശയങ്ങൾ നോട്ട്സ് നൽകി. പേജ് 42-ലെ ചോദ്യങ്ങൾ ക്ലാസ്സിൽ ചെയ്തു." required></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary small">
+                                <i class="bi bi-pencil-square text-success me-1"></i> Homework Given (ഹോംവർക്ക് നൽകിയത്)
+                            </label>
+                            <textarea class="form-control" name="homework" rows="2" placeholder="ഉദാ: ടെക്സ്റ്റ് ബുക്ക് പേജ് 45 ലെ ചോദ്യം 1 മുതൽ 5 വരെ നോട്ട്ബുക്കിൽ എഴുതി വരിക."></textarea>
+                        </div>
+
+                        <div class="alert alert-info py-2 px-3 small d-flex align-items-center gap-2 mb-0" style="border-radius: 10px;">
+                            <i class="bi bi-bell-fill fs-5 text-primary"></i>
+                            <div>ഇത് സേവ് ചെയ്യുമ്പോൾ കുട്ടിയുടെ രക്ഷിതാക്കളുടെ ഫോണിലേക്ക് പോപ്പ്-അപ്പ് നോട്ടിഫിക്കേഷൻ എത്തും.</div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer bg-light px-4 py-3">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary d-flex align-items-center gap-2">
+                            <i class="bi bi-send-check"></i>
+                            <span>Publish & Notify Parents</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- PUBLISHED ACTIVITIES FEED -->
+    <div class="dash-card">
+        <div class="dash-card-header d-flex justify-content-between align-items-center">
+            <h3 class="dash-card-title">
+                <i class="bi bi-clock-history text-primary me-2"></i> Recent Class Activities
+            </h3>
+            <span class="text-muted small">Total: {{activities.length}} Posts</span>
+        </div>
+
+        <div class="dash-card-body p-3">
+            {{#if activities.length}}
+                <div class="row g-3">
+                    {{#each activities}}
+                        <div class="col-12 col-lg-6">
+                            <div class="card border p-3 rounded-4 h-100 shadow-sm" style="border-color: #e2e8f0;">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="d-flex flex-wrap align-items-center gap-2">
+                                        <span class="badge bg-primary px-2 py-1">{{this.subject}}</span>
+                                        <span class="badge bg-secondary-subtle text-secondary px-2 py-1">{{this.class}}</span>
+                                        {{#if this.targetStudentName}}
+                                            <span class="badge bg-info-subtle text-info-emphasis px-2 py-1">
+                                                <i class="bi bi-person-fill"></i> {{this.targetStudentName}}
+                                            </span>
+                                        {{/if}}
+                                        <span class="badge bg-light text-dark border px-2 py-1">{{this.shift}}</span>
+                                    </div>
+                                    <form action="/admin/activities/delete/{{this._id}}" method="POST" onsubmit="return confirm('ഈ ആക്ടിവിറ്റി പോസ്റ്റ് ഡിലീറ്റ് ചെയ്യണോ?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger border-0 p-1" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+
+                                <h5 class="fw-bold text-dark m-0 mb-1">{{this.topic}}</h5>
+                                <div class="text-muted small mb-3">
+                                    <i class="bi bi-calendar3 me-1"></i>{{formatDate this.date}}
+                                    {{#if this.teacherName}} • <i class="bi bi-person-badge me-1"></i>Mentor: <strong>{{this.teacherName}}</strong>{{/if}}
+                                </div>
+
+                                <!-- NOTES GIVEN BOX -->
+                                <div class="p-2 mb-2 rounded-3 bg-light border small text-dark">
+                                    <strong class="text-primary d-block mb-1">
+                                        <i class="bi bi-journal-text me-1"></i> {{this.subject}} — Notes:
+                                    </strong>
+                                    {{#if this.notesGiven}}{{this.notesGiven}}{{else}}{{this.description}}{{/if}}
+                                </div>
+
+                                <!-- HOMEWORK GIVEN BOX -->
+                                {{#if (or this.homeworkGiven this.homework)}}
+                                    <div class="p-2 rounded-3 bg-warning-subtle text-warning-emphasis small border border-warning-subtle">
+                                        <strong class="d-block mb-1">
+                                            <i class="bi bi-pencil-square me-1"></i> {{this.subject}} — Homework:
+                                        </strong>
+                                        {{#if this.homeworkGiven}}{{this.homeworkGiven}}{{else}}{{this.homework}}{{/if}}
+                                    </div>
+                                {{/if}}
+                            </div>
+                        </div>
+                    {{/each}}
+                </div>
+            {{else}}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-journal-x fs-1 text-secondary d-block mb-2"></i>
+                    <div>ഇതുവരെ ക്ലാസ്സ് ആക്ടിവിറ്റികൾ ചേർത്തിട്ടില്ല.</div>
+                    <small>മുകളിലുള്ള 'Add Class Activity' ബട്ടൺ ഉപയോഗിച്ച് ചേർക്കുക.</small>
+                </div>
+            {{/if}}
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function filterActivityStudents() {
+        const classSelect = document.getElementById('activityClassSelect');
+        const studentSelect = document.getElementById('activityStudentSelect');
+        if (!classSelect || !studentSelect) return;
+
+        const selClass = classSelect.value;
+        const selClassNum = selClass.replace(/\D/g, '');
+
+        Array.from(studentSelect.options).forEach(opt => {
+            if (opt.value === 'ALL') {
+                opt.style.display = '';
+                return;
+            }
+            const sClass = opt.getAttribute('data-class') || '';
+            const sClassNum = sClass.replace(/\D/g, '');
+            if (sClass === selClass || sClassNum === selClassNum) {
+                opt.style.display = '';
+            } else {
+                opt.style.display = 'none';
+            }
+        });
+    }
+
+    function initActivitiesPage() {
+        const dInput = document.getElementById('activityDateInput');
+        if (dInput && !dInput.value) {
+            dInput.value = new Date().toISOString().split('T')[0];
+        }
+
+        const classSelect = document.getElementById('activityClassSelect');
+        if (classSelect) {
+            classSelect.removeEventListener('change', filterActivityStudents);
+            classSelect.addEventListener('change', filterActivityStudents);
+            filterActivityStudents();
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initActivitiesPage);
+    } else {
+        initActivitiesPage();
+    }
+</script>

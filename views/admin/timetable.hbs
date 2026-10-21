@@ -1,0 +1,287 @@
+<div class="timetable-page p-3 p-md-4">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1 class="page-title m-0">Timetable & Daily Book Reminders</h1>
+            <p class="text-muted m-0">ക്ലാസ്സ് ടൈംടേബിളും രക്ഷിതാക്കൾക്ക് ബുക്കുകൾ ഓർമ്മിപ്പിക്കാനുള്ള ഓട്ടോമാറ്റിക് നോട്ടിഫിക്കേഷനും</p>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+            <!-- TRIGGER TODAY REMINDER BUTTON -->
+            <form action="/admin/timetable/send-reminder" method="POST" onsubmit="return confirm('ഇന്നത്തെ ({{todayData.day}}) ക്ലാസുകളും കൊണ്ടുവരേണ്ട പുസ്തകങ്ങളും ഓർമ്മിപ്പിച്ചുകൊണ്ട് എല്ലാ രക്ഷിതാക്കൾക്കും ഇപ്പോൾ തന്നെ പുഷ് നോട്ടിഫിക്കേഷൻ അയക്കണോ?');">
+                <input type="hidden" name="className" value="{{selectedClass}}">
+                <button type="submit" class="btn btn-warning fw-bold text-dark d-flex align-items-center gap-2 shadow-sm">
+                    <i class="bi bi-bell-fill text-danger"></i>
+                    <span>Send Today's Book Reminder to Parents</span>
+                </button>
+            </form>
+
+            <button
+                class="btn btn-primary d-flex align-items-center gap-2"
+                data-bs-toggle="modal"
+                data-bs-target="#addPeriodModal">
+                <i class="bi bi-plus-circle-fill"></i>
+                <span>Add Period / Class</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- REMINDER SENT SUCCESS ALERT -->
+    {{#if reminderSuccess}}
+        <div class="alert alert-success alert-dismissible fade show d-flex align-items-center gap-3 p-3 rounded-4 mb-4 shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill fs-3 text-success"></i>
+            <div>
+                <strong>വിജയകരമായി നോട്ടിഫിക്കേഷൻ അയച്ചു!</strong>
+                <div>{{reminderDay}} ദിവസത്തെ ടൈംടേബിളും കൊണ്ടുവരേണ്ട പുസ്തകങ്ങളുടെ വിവരങ്ങളും <strong>{{sentCount}}</strong> കുട്ടികളുടെ രക്ഷിതാക്കളുടെ ഫോണിലേക്ക് പോപ്പ്-അപ്പ് നോട്ടിഫിക്കേഷനായി അയച്ചു.</div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {{/if}}
+
+    <!-- CLASS FILTER & TODAY STATUS CARD -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-lg-4">
+            <div class="card p-3 rounded-4 border h-100 shadow-sm" style="border-color: #e2e8f0;">
+                <label class="form-label fw-bold text-dark small mb-2">
+                    <i class="bi bi-funnel-fill text-primary me-1"></i> Select Class / Standard
+                </label>
+                <div class="input-group mb-3">
+                    <select class="form-select fw-semibold" id="classSelectDropdown" onchange="window.location.href='/admin/timetable?class=' + encodeURIComponent(this.value)">
+                        <option value="Class 1" {{#if (eq selectedClass "Class 1")}}selected{{/if}}>Class 1</option>
+                        <option value="Class 2" {{#if (eq selectedClass "Class 2")}}selected{{/if}}>Class 2</option>
+                        <option value="Class 3" {{#if (eq selectedClass "Class 3")}}selected{{/if}}>Class 3</option>
+                        <option value="Class 4" {{#if (eq selectedClass "Class 4")}}selected{{/if}}>Class 4</option>
+                        <option value="Class 5" {{#if (eq selectedClass "Class 5")}}selected{{/if}}>Class 5</option>
+                        <option value="Class 6" {{#if (eq selectedClass "Class 6")}}selected{{/if}}>Class 6</option>
+                        <option value="Class 7" {{#if (eq selectedClass "Class 7")}}selected{{/if}}>Class 7</option>
+                        <option value="Class 8" {{#if (eq selectedClass "Class 8")}}selected{{/if}}>Class 8</option>
+                        <option value="Class 9" {{#if (eq selectedClass "Class 9")}}selected{{/if}}>Class 9</option>
+                        <option value="Class 10" {{#if (eq selectedClass "Class 10")}}selected{{/if}}>Class 10</option>
+                    </select>
+                </div>
+                <div class="small text-muted">
+                    <i class="bi bi-info-circle me-1"></i> ഓരോ ക്ലാസിനും അനുയോജ്യമായ വിഷയങ്ങളും (ചെറിയ ക്ലാസ്സുകൾക്ക് Science, ഹൈസ്കൂളിന് Physics/Chemistry/Biology) ടൈംടേബിളിൽ സജ്ജീകരിക്കാം.
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-8">
+            <div class="card p-3 rounded-4 border h-100 shadow-sm" style="background: linear-gradient(135deg, #f0fdfa, #f8fafc); border-color: #99f6e4;">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-primary px-2 py-1 fs-6">
+                            <i class="bi bi-calendar-event me-1"></i> Today: {{todayData.day}}
+                        </span>
+                        <span class="badge bg-light text-dark border px-2 py-1">{{selectedClass}}</span>
+                    </div>
+                    <small class="text-muted fw-semibold">Daily Automatic Auto-Dispatch Active</small>
+                </div>
+
+                <div class="mt-2">
+                    <strong class="d-block text-dark small text-uppercase fw-bold mb-1">
+                        🎒 ഇന്നു നടക്കേണ്ട ക്ലാസുകളും കൊണ്ടുവരേണ്ട പുസ്തകങ്ങളും:
+                    </strong>
+                    {{#if todayData.periods.length}}
+                        <div class="d-flex flex-wrap gap-2">
+                            {{#each todayData.periods}}
+                                <div class="p-2 rounded-3 bg-white border small shadow-2xs" style="border-color: #cbd5e1;">
+                                    <div class="fw-bold text-primary">{{this.subject}}</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;">{{this.time}}</div>
+                                    <div class="text-secondary" style="font-size: 0.75rem;">
+                                        <i class="bi bi-book me-1"></i>{{this.books}}
+                                    </div>
+                                </div>
+                            {{/each}}
+                        </div>
+                    {{else}}
+                        <div class="text-muted small py-2">
+                            {{#if todayData.isSunday}}
+                                <i class="bi bi-sun text-warning me-1"></i> ഇന്ന് ഞായറാഴ്ചയാണ് (അവധിയായതിനാൽ ക്ലാസുകൾ ഇല്ല).
+                            {{else}}
+                                ഇന്നത്തേക്ക് പ്രത്യേക ക്ലാസുകൾ ഷെഡ്യൂൾ ചെയ്തിട്ടില്ല.
+                            {{/if}}
+                        </div>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- WEEKLY TIMETABLE SCHEDULE CARDS -->
+    <h4 class="fw-bold text-dark mb-3">
+        <i class="bi bi-calendar-week-fill text-primary me-2"></i> Weekly Timetable — {{selectedClass}}
+    </h4>
+
+    <div class="row g-3">
+        {{#each schedule}}
+            <div class="col-12 col-md-6 col-xl-4">
+                <div class="card rounded-4 border h-100 shadow-sm overflow-hidden" style="border-color: #e2e8f0;">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center py-2 px-3 border-bottom">
+                        <strong class="text-dark fs-6">
+                            <i class="bi bi-calendar3 text-primary me-1"></i> {{this.day}}
+                        </strong>
+                        <button
+                            type="button"
+                            class="btn btn-xs btn-outline-primary"
+                            data-bs-toggle="modal"
+                            data-bs-target="#addPeriodModal"
+                            onclick="setModalDay('{{this.day}}')">
+                            <i class="bi bi-plus"></i> Add
+                        </button>
+                    </div>
+
+                    <div class="p-3">
+                        {{#if this.periods.length}}
+                            <div class="d-flex flex-column gap-2">
+                                {{#each this.periods}}
+                                    <div class="p-2 rounded-3 border bg-white" style="border-color: #f1f5f9;">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <strong class="text-dark" style="font-size: 0.95rem;">{{this.subject}}</strong>
+                                                <div class="text-primary small fw-semibold">
+                                                    <i class="bi bi-clock me-1"></i>{{this.time}}
+                                                </div>
+                                            </div>
+                                            <form action="/admin/timetable/delete-period" method="POST" onsubmit="return confirm('ഈ പിരീഡ് ടൈംടേബിളിൽ നിന്ന് നീക്കം ചെയ്യണോ?');">
+                                                <input type="hidden" name="className" value="{{../../selectedClass}}">
+                                                <input type="hidden" name="day" value="{{../day}}">
+                                                <input type="hidden" name="periodIndex" value="{{@index}}">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger border-0 p-1" title="Delete">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+
+                                        {{#if this.teacher}}
+                                            <div class="text-muted small mt-1">
+                                                <i class="bi bi-person-badge me-1"></i>Mentor: {{this.teacher}}
+                                            </div>
+                                        {{/if}}
+
+                                        <div class="mt-1 p-1 px-2 rounded-2 bg-light text-secondary small" style="font-size: 0.76rem;">
+                                            <i class="bi bi-bag-check-fill text-warning-emphasis me-1"></i>
+                                            <strong>Books:</strong> {{this.books}}
+                                        </div>
+                                    </div>
+                                {{/each}}
+                            </div>
+                        {{else}}
+                            <div class="text-center py-4 text-muted small">
+                                <div>ക്ലാസുകൾ നൽകിയിട്ടില്ല.</div>
+                            </div>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+        {{/each}}
+    </div>
+
+    <!-- ADD PERIOD MODAL -->
+    <div class="modal fade" id="addPeriodModal" tabindex="-1" aria-labelledby="addPeriodModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 18px; border: none; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.15);">
+                <form action="/admin/timetable/save-period" method="POST">
+                    <input type="hidden" name="className" value="{{selectedClass}}">
+
+                    <div class="modal-header bg-light border-bottom px-4 py-3">
+                        <h5 class="modal-title fw-bold text-dark m-0" id="addPeriodModalLabel">
+                            <i class="bi bi-calendar-plus text-primary me-2"></i> Add Class Period
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary small">Day of Week (ദിവസം) <span class="text-danger">*</span></label>
+                            <select class="form-select" name="day" id="modalDaySelect" required>
+                                {{#each days}}
+                                    <option value="{{this}}">{{this}}</option>
+                                {{/each}}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary small">Time / Period (സമയം) <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="time" placeholder="e.g. 04:30 PM – 05:30 PM" value="04:30 PM – 05:30 PM" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary small">Subject (വിഷയം) <span class="text-danger">*</span></label>
+                            <select class="form-select" name="subject" required id="modalSubjectSelect">
+                                <option value="Mathematics" selected>Mathematics (കണക്ക്)</option>
+                                <option value="Physics">Physics (ഫിസിക്സ്)</option>
+                                <option value="Chemistry">Chemistry (കെമിസ്ട്രി)</option>
+                                <option value="Biology">Biology (ബയോളജി)</option>
+                                <option value="Science">Science (സയൻസ്)</option>
+                                <option value="English">English</option>
+                                <option value="Social Science">Social Science (സാമൂഹ്യശാസ്ത്രം)</option>
+                                <option value="Malayalam">Malayalam (മലയാളം)</option>
+                                <option value="Hindi">Hindi (ഹിന്ദി)</option>
+                                <option value="Special Revision">Special Revision / Test</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary small">Faculty / Teacher (അധ്യാപകൻ)</label>
+                            <select class="form-select" name="teacher">
+                                {{#if teachers.length}}
+                                    {{#each teachers}}
+                                        <option value="{{this.name}}">{{this.name}} ({{this.subject}})</option>
+                                    {{/each}}
+                                {{else}}
+                                    <option value="Sri. Rajesh Kumar">Sri. Rajesh Kumar</option>
+                                    <option value="Smt. Deepa Nair">Smt. Deepa Nair</option>
+                                    <option value="Sri. Arun Kumar">Sri. Arun Kumar</option>
+                                {{/if}}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary small">
+                                Books & Materials to Bring (കൊണ്ടുവരേണ്ട പുസ്തകങ്ങൾ)
+                            </label>
+                            <input type="text" class="form-control" name="books" id="modalBooksInput" placeholder="e.g. Text Book, 200-page Note Book & Geometry Box" value="Text Book & Note Book">
+                            <small class="text-muted" style="font-size: 0.75rem;">ഇത് രക്ഷിതാക്കൾക്ക് നോട്ടിഫിക്കേഷനായും ചെക്ക്‌ലിസ്റ്റായും എത്തും</small>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer bg-light px-4 py-3">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary d-flex align-items-center gap-2">
+                            <i class="bi bi-check-lg"></i>
+                            <span>Save to Timetable</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+function setModalDay(day) {
+    const sel = document.getElementById('modalDaySelect');
+    if (sel && day) {
+        sel.value = day;
+    }
+}
+
+function initTimetablePage() {
+    const subSelect = document.getElementById('modalSubjectSelect');
+    const booksInput = document.getElementById('modalBooksInput');
+    if (subSelect && booksInput) {
+        subSelect.onchange = function() {
+            const sub = this.value;
+            booksInput.value = `${sub} Text Book & Note Book`;
+        };
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initTimetablePage);
+} else {
+    initTimetablePage();
+}
+</script>

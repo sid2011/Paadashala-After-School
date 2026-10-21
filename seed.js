@@ -158,13 +158,17 @@ async function seedDatabase() {
             "2026-10-15", "2026-10-16", "2026-10-17", "2026-10-18", "2026-10-19", "2026-10-20"
         ];
 
+        const subjectsList = ["Mathematics", "Physics", "Chemistry", "English"];
+
         for (const s of students) {
             dates.forEach((d, idx) => {
+                // Distribute subjects across dates
+                const sub = subjectsList[idx % subjectsList.length];
                 // Occasional absent for realistic stats
                 const isAbsent = (s.studentId === "PAD1024" && idx === 3) || (s.studentId === "PAD1026" && idx === 5);
                 attendanceOps.push({
                     updateOne: {
-                        filter: { date: d, studentId: s.studentId },
+                        filter: { date: d, studentId: s.studentId, subject: sub },
                         update: {
                             $set: {
                                 date: d,
@@ -172,6 +176,7 @@ async function seedDatabase() {
                                 studentName: s.name,
                                 class: s.class,
                                 shift: s.shift,
+                                subject: sub,
                                 status: isAbsent ? "absent" : "present",
                                 updatedAt: new Date()
                             }
@@ -183,10 +188,124 @@ async function seedDatabase() {
         }
 
         await attendanceCol.bulkWrite(attendanceOps);
-        console.log(`✅ Seeded daily attendance records for all students across test dates.`);
+        console.log(`✅ Seeded subject-wise daily attendance records for all students across test dates.`);
 
         // -------------------------------------------------------------
-        // 4. SEED TEACHER OPINIONS
+        // 4. SEED DAILY ACTIVITIES & HOMEWORK
+        // -------------------------------------------------------------
+        const activityCol = db.collection(collections.DAILY_ACTIVITY_COLLECTION);
+        const sampleActivities = [
+            {
+                date: "2026-10-21",
+                class: "Class 10",
+                subject: "Mathematics",
+                shift: "Morning",
+                teacherName: "Smt. Lakshmi N",
+                topic: "Quadratic Equations - Formula Method",
+                description: "സൂത്രവാക്യം ഉപയോഗിച്ച് സമവാക്യങ്ങൾ നിർദ്ധാരണം ചെയ്യുന്ന രീതി വിശദീകരിച്ചു. പേജ് 82-ലെ 1 മുതൽ 5 വരെയുള്ള ചോദ്യങ്ങൾ ക്ലാസ്സിൽ ചെയ്തു.",
+                homework: "ടെക്സ്റ്റ് ബുക്ക് പേജ് 84-ലെ ചോദ്യം 6, 7 എന്നിവ നോട്ട്ബുക്കിൽ ചെയ്ത് വരിക.",
+                author: "Administrator",
+                createdAt: new Date("2026-10-21T09:30:00")
+            },
+            {
+                date: "2026-10-21",
+                class: "Class 10",
+                subject: "Physics",
+                shift: "Evening",
+                teacherName: "Sri. Rajesh Kumar",
+                topic: "Refraction of Light & Snell's Law",
+                description: "പ്രകാശത്തിന്റെ അപവർത്തനം, സ്നെൽസ് നിയമം എന്നിവ ചിത്രങ്ങൾ സഹിതം വിശദീകരിച്ചു. പ്രോബ്ലംസ് വർക്ക്ഔട്ട് ചെയ്തു.",
+                homework: "സ്നെൽസ് നിയമത്തിന്റെ സമവാക്യം 3 തവണ എഴുതി പഠിക്കുക.",
+                author: "Administrator",
+                createdAt: new Date("2026-10-21T11:00:00")
+            },
+            {
+                date: "2026-10-20",
+                class: "Class 10",
+                subject: "Chemistry",
+                shift: "All Batches",
+                teacherName: "Smt. Divya P",
+                topic: "Periodic Table & Periodic Trends",
+                description: "പീരിയോഡിക് ടേബിളിലെ മൂലകങ്ങളുടെ ഇലക്ട്രോൺ വിന്യാസം, വലിപ്പം, അയോണീകരണ ഊർജ്ജം എന്നിവ ചർച്ച ചെയ്തു.",
+                homework: "ആദ്യത്തെ 20 മൂലകങ്ങളുടെ ഇലക്ട്രോൺ വിന്യാസം പൂർത്തിയാക്കുക.",
+                author: "Administrator",
+                createdAt: new Date("2026-10-20T10:00:00")
+            }
+        ];
+
+        for (const act of sampleActivities) {
+            await activityCol.updateOne(
+                { topic: act.topic, date: act.date },
+                { $set: act },
+                { upsert: true }
+            );
+        }
+        console.log(`✅ Seeded sample daily class activities and homework.`);
+
+        // -------------------------------------------------------------
+        // 5. SEED STUDENT MARKS & SCHOOL VS PAADASHALA COMPARISON
+        // -------------------------------------------------------------
+        const marksCol = db.collection(collections.STUDENT_MARKS_COLLECTION);
+        const sampleMarks = [
+            {
+                studentId: "PAD1024",
+                studentName: "Sidharth B",
+                class: "Class 10",
+                academicYear: "2026-2027",
+                examTerm: "Term 1 (Onam / First Term)",
+                subjects: [
+                    { name: "Mathematics", maxMarks: 100, schoolMarks: 65, paadashalaMarks: 88, difference: 23, remarks: "Excellent algebra practice" },
+                    { name: "Physics", maxMarks: 100, schoolMarks: 58, paadashalaMarks: 82, difference: 24, remarks: "Concepts clarified well" },
+                    { name: "Chemistry", maxMarks: 100, schoolMarks: 60, paadashalaMarks: 85, difference: 25, remarks: "Equations mastered" },
+                    { name: "Biology", maxMarks: 100, schoolMarks: 70, paadashalaMarks: 90, difference: 20, remarks: "Neat diagram work" },
+                    { name: "English", maxMarks: 100, schoolMarks: 72, paadashalaMarks: 86, difference: 14, remarks: "Good grammar grasp" },
+                    { name: "Social Science", maxMarks: 100, schoolMarks: 64, paadashalaMarks: 84, difference: 20, remarks: "Historical facts accurate" }
+                ],
+                totalMax: 600,
+                totalSchool: 389,
+                totalPaadashala: 515,
+                schoolPercentage: 64.8,
+                paadashalaPercentage: 85.8,
+                improvement: 21.0,
+                remarks: "പാഠശാല കോച്ചിംഗിലൂടെ സ്കൂൾ പരീക്ഷയെ അപേക്ഷിച്ച് 21% മാർക്ക് വർദ്ധനവ് നേടിയിട്ടുണ്ട്. മികച്ച മുന്നേറ്റം!",
+                createdAt: new Date("2026-09-25")
+            },
+            {
+                studentId: "PAD1024",
+                studentName: "Sidharth B",
+                class: "Class 10",
+                academicYear: "2026-2027",
+                examTerm: "Term 2 (Christmas / Second Term)",
+                subjects: [
+                    { name: "Mathematics", maxMarks: 100, schoolMarks: 72, paadashalaMarks: 94, difference: 22, remarks: "Outstanding problem solving" },
+                    { name: "Physics", maxMarks: 100, schoolMarks: 65, paadashalaMarks: 89, difference: 24, remarks: "Formula derivations clear" },
+                    { name: "Chemistry", maxMarks: 100, schoolMarks: 68, paadashalaMarks: 91, difference: 23, remarks: "Organic chemistry strong" },
+                    { name: "Biology", maxMarks: 100, schoolMarks: 75, paadashalaMarks: 93, difference: 18, remarks: "Full score in diagrams" },
+                    { name: "English", maxMarks: 100, schoolMarks: 76, paadashalaMarks: 88, difference: 12, remarks: "Essay writing refined" },
+                    { name: "Social Science", maxMarks: 100, schoolMarks: 70, paadashalaMarks: 89, difference: 19, remarks: "Geography maps perfect" }
+                ],
+                totalMax: 600,
+                totalSchool: 426,
+                totalPaadashala: 544,
+                schoolPercentage: 71.0,
+                paadashalaPercentage: 90.7,
+                improvement: 19.7,
+                remarks: "രണ്ടാം പാദപരീക്ഷയിൽ 90.7% മാർക്കോടെ എ പ്ലസ് നിലവാരത്തിലേക്ക് ഉയർന്നു.",
+                createdAt: new Date("2026-10-15")
+            }
+        ];
+
+        for (const m of sampleMarks) {
+            await marksCol.updateOne(
+                { studentId: m.studentId, examTerm: m.examTerm },
+                { $set: m },
+                { upsert: true }
+            );
+        }
+        console.log(`✅ Seeded student comparison marks reports with School vs Paadashala graph data.`);
+
+        // -------------------------------------------------------------
+        // 6. SEED TEACHER OPINIONS
         // -------------------------------------------------------------
         const opinionCol = db.collection(collections.TEACHER_OPINION_COLLECTION);
         const sampleOpinions = [
@@ -229,7 +348,122 @@ async function seedDatabase() {
         console.log(`✅ Seeded sample teacher feedback notes.`);
 
         // -------------------------------------------------------------
-        // 5. SEED BROADCAST ANNOUNCEMENTS
+        // 5. SEED TIMETABLES FOR CLASS 10 & CLASS 8
+        // -------------------------------------------------------------
+        const timetableCol = db.collection(collections.TIMETABLE_COLLECTION);
+        const class10Schedule = [
+            {
+                day: 'Monday',
+                periods: [
+                    { time: '04:30 PM – 05:30 PM', subject: 'Mathematics', teacher: 'Sri. Rajesh Kumar', books: 'Maths Text Book & 200-page Note Book' },
+                    { time: '05:30 PM – 06:30 PM', subject: 'Physics', teacher: 'Smt. Deepa Nair', books: 'Physics Text Book & Note Book' },
+                    { time: '06:30 PM – 07:30 PM', subject: 'Chemistry', teacher: 'Sri. Arun Kumar', books: 'Chemistry Text Book & Formula Sheet' }
+                ]
+            },
+            {
+                day: 'Tuesday',
+                periods: [
+                    { time: '04:30 PM – 05:30 PM', subject: 'Biology', teacher: 'Smt. Deepa Nair', books: 'Biology Text Book & Diagram Note Book' },
+                    { time: '05:30 PM – 06:30 PM', subject: 'Mathematics', teacher: 'Sri. Rajesh Kumar', books: 'Maths Text Book & Geometry Box' },
+                    { time: '06:30 PM – 07:30 PM', subject: 'English', teacher: 'Smt. Lakshmi', books: 'English Reader & Note Book' }
+                ]
+            },
+            {
+                day: 'Wednesday',
+                periods: [
+                    { time: '04:30 PM – 05:30 PM', subject: 'Physics', teacher: 'Smt. Deepa Nair', books: 'Physics Text Book & Problems Book' },
+                    { time: '05:30 PM – 06:30 PM', subject: 'Chemistry', teacher: 'Sri. Arun Kumar', books: 'Chemistry Text Book & Equation Sheet' },
+                    { time: '06:30 PM – 07:30 PM', subject: 'Social Science', teacher: 'Sri. Anoop Thomas', books: 'History & Civics Text Book' }
+                ]
+            },
+            {
+                day: 'Thursday',
+                periods: [
+                    { time: '04:30 PM – 05:30 PM', subject: 'Mathematics', teacher: 'Sri. Rajesh Kumar', books: 'Maths Text Book & Note Book' },
+                    { time: '05:30 PM – 06:30 PM', subject: 'Biology', teacher: 'Smt. Deepa Nair', books: 'Biology Text Book & Note Book' },
+                    { time: '06:30 PM – 07:30 PM', subject: 'Malayalam', teacher: 'Smt. Sarada', books: 'Malayalam Text Book & Note Book' }
+                ]
+            },
+            {
+                day: 'Friday',
+                periods: [
+                    { time: '04:30 PM – 05:30 PM', subject: 'Chemistry', teacher: 'Sri. Arun Kumar', books: 'Chemistry Text Book & Note Book' },
+                    { time: '05:30 PM – 06:30 PM', subject: 'Physics', teacher: 'Smt. Deepa Nair', books: 'Physics Text Book & Note Book' },
+                    { time: '06:30 PM – 07:30 PM', subject: 'Mathematics', teacher: 'Sri. Rajesh Kumar', books: 'Maths Revision Workbook' }
+                ]
+            },
+            {
+                day: 'Saturday',
+                periods: [
+                    { time: '09:30 AM – 11:30 AM', subject: 'Special Revision / Test Series', teacher: 'Sri. Rajesh Kumar & Smt. Deepa Nair', books: 'All Subject Question Banks & Exam Pad' }
+                ]
+            }
+        ];
+
+        const class8Schedule = [
+            {
+                day: 'Monday',
+                periods: [
+                    { time: '04:30 PM – 05:30 PM', subject: 'Mathematics', teacher: 'Sri. Rajesh Kumar', books: 'Maths Text Book & Note Book' },
+                    { time: '05:30 PM – 06:30 PM', subject: 'Science', teacher: 'Smt. Deepa Nair', books: 'General Science Text Book & Note Book' },
+                    { time: '06:30 PM – 07:30 PM', subject: 'English', teacher: 'Smt. Lakshmi', books: 'English Reader & Note Book' }
+                ]
+            },
+            {
+                day: 'Tuesday',
+                periods: [
+                    { time: '04:30 PM – 05:30 PM', subject: 'Social Science', teacher: 'Sri. Anoop Thomas', books: 'Social Science Text Book & Map Book' },
+                    { time: '05:30 PM – 06:30 PM', subject: 'Mathematics', teacher: 'Sri. Rajesh Kumar', books: 'Maths Text Book & Note Book' },
+                    { time: '06:30 PM – 07:30 PM', subject: 'Malayalam', teacher: 'Smt. Sarada', books: 'Malayalam Reader & Note Book' }
+                ]
+            },
+            {
+                day: 'Wednesday',
+                periods: [
+                    { time: '04:30 PM – 05:30 PM', subject: 'Science', teacher: 'Smt. Deepa Nair', books: 'General Science Text Book & Note Book' },
+                    { time: '05:30 PM – 06:30 PM', subject: 'Mathematics', teacher: 'Sri. Rajesh Kumar', books: 'Maths Problem Note Book' },
+                    { time: '06:30 PM – 07:30 PM', subject: 'Hindi', teacher: 'Sri. Varma', books: 'Hindi Text Book & Note Book' }
+                ]
+            },
+            {
+                day: 'Thursday',
+                periods: [
+                    { time: '04:30 PM – 05:30 PM', subject: 'Mathematics', teacher: 'Sri. Rajesh Kumar', books: 'Maths Text Book & Note Book' },
+                    { time: '05:30 PM – 06:30 PM', subject: 'Science', teacher: 'Smt. Deepa Nair', books: 'General Science Text Book & Activity Book' },
+                    { time: '06:30 PM – 07:30 PM', subject: 'English', teacher: 'Smt. Lakshmi', books: 'English Grammar Book' }
+                ]
+            },
+            {
+                day: 'Friday',
+                periods: [
+                    { time: '04:30 PM – 05:30 PM', subject: 'Social Science', teacher: 'Sri. Anoop Thomas', books: 'Social Science Text Book' },
+                    { time: '05:30 PM – 06:30 PM', subject: 'Science', teacher: 'Smt. Deepa Nair', books: 'General Science Revision Book' },
+                    { time: '06:30 PM – 07:30 PM', subject: 'Mathematics', teacher: 'Sri. Rajesh Kumar', books: 'Maths Note Book' }
+                ]
+            },
+            {
+                day: 'Saturday',
+                periods: [
+                    { time: '09:30 AM – 11:30 AM', subject: 'Weekly Assessment', teacher: 'Sri. Rajesh Kumar', books: 'Test Pad & Pencil Box' }
+                ]
+            }
+        ];
+
+        await timetableCol.updateOne(
+            { class: 'Class 10' },
+            { $set: { class: 'Class 10', schedule: class10Schedule, updatedAt: new Date() } },
+            { upsert: true }
+        );
+
+        await timetableCol.updateOne(
+            { class: 'Class 8' },
+            { $set: { class: 'Class 8', schedule: class8Schedule, updatedAt: new Date() } },
+            { upsert: true }
+        );
+        console.log(`✅ Seeded weekly timetables for Class 10 and Class 8 with textbooks and notebooks.`);
+
+        // -------------------------------------------------------------
+        // 6. SEED BROADCAST ANNOUNCEMENTS
         // -------------------------------------------------------------
         const announcementCol = db.collection(collections.ANNOUNCEMENT_COLLECTION);
         const sampleAnnouncements = [

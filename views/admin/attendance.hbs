@@ -15,25 +15,25 @@
   <div class="dash-card mb-4">
     <div class="dash-card-header">
       <h3 class="dash-card-title">
-        <i class="bi bi-funnel-fill text-primary me-2"></i> Select Class & Shift
+        <i class="bi bi-funnel-fill text-primary me-2"></i> Select Class, Shift & Subject Period
       </h3>
-      <span class="text-muted small">ഹാജർ എടുക്കേണ്ട ക്ലാസ്സും സമയവും തെരഞ്ഞെടുക്കുക</span>
+      <span class="text-muted small">ക്ലാസ്സ്, വിഷയം (Subject), പിരീഡ് എന്നിവ അടിസ്ഥാനമാക്കി ഹാജർ രേഖപ്പെടുത്തുക</span>
     </div>
     <div class="dash-card-body">
       <div class="row g-3 align-items-end">
         <div class="col-12 col-md-3">
           <label class="form-label fw-semibold text-secondary small" for="attendanceDate">
-            <i class="bi bi-calendar3 me-1"></i> Date
+            <i class="bi bi-calendar3 me-1"></i> Date (തീയതി)
           </label>
           <input type="date" class="form-control" id="attendanceDate" />
         </div>
 
-        <div class="col-12 col-md-3">
+        <div class="col-12 col-md-2">
           <label class="form-label fw-semibold text-secondary small" for="classSelect">
             <i class="bi bi-mortarboard me-1"></i> Class
           </label>
           <select class="form-select" id="classSelect">
-            <option value="all">All Classes (എല്ലാ ക്ലാസ്സുകളും)</option>
+            <option value="all">All Classes</option>
             <option value="Class 1">Class 1</option>
             <option value="Class 2">Class 2</option>
             <option value="Class 3">Class 3</option>
@@ -47,22 +47,39 @@
           </select>
         </div>
 
-        <div class="col-12 col-md-3">
+        <div class="col-12 col-md-2">
           <label class="form-label fw-semibold text-secondary small" for="shiftSelect">
-            <i class="bi bi-clock-history me-1"></i> Batch / Shift
+            <i class="bi bi-clock-history me-1"></i> Shift
           </label>
           <select class="form-select" id="shiftSelect">
-            <option value="all">All Shifts (എല്ലാ ബാച്ചുകളും)</option>
-            <option value="Morning">Morning Shift (രാവിലെ)</option>
-            <option value="Afternoon">Afternoon Shift (ഉച്ചയ്ക്ക്)</option>
-            <option value="Evening">Evening Shift (വൈകുന്നേരം)</option>
+            <option value="all">All Shifts</option>
+            <option value="Morning">Morning Shift</option>
+            <option value="Afternoon">Afternoon Shift</option>
+            <option value="Evening" selected>Evening Shift</option>
           </select>
         </div>
 
         <div class="col-12 col-md-3">
+          <label class="form-label fw-semibold text-secondary small" for="subjectSelect">
+            <i class="bi bi-book me-1"></i> Subject (വിഷയം)
+          </label>
+          <select class="form-select" id="subjectSelect">
+            <option value="Mathematics" selected>Mathematics (കണക്ക്)</option>
+            <option value="Physics">Physics (ഫിസിക്സ്)</option>
+            <option value="Chemistry">Chemistry (കെമിസ്ട്രി)</option>
+            <option value="Biology">Biology (ബയോളജി)</option>
+            <option value="English">English</option>
+            <option value="Social Science">Social Science (സാമൂഹ്യശാസ്ത്രം)</option>
+            <option value="Malayalam">Malayalam (മലയാളം)</option>
+            <option value="Hindi">Hindi (ഹിന്ദി)</option>
+            <option value="General">General / All-Day</option>
+          </select>
+        </div>
+
+        <div class="col-12 col-md-2">
           <button type="button" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2" id="loadStudentsBtn">
             <i class="bi bi-arrow-clockwise"></i>
-            <span>Load Students</span>
+            <span>Load Batch</span>
           </button>
         </div>
       </div>

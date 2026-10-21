@@ -16,6 +16,11 @@ const {
   verifyWebhookSignature,
   generateReceiptNumber
 } = require('../helpers/razorpay-helper');
+const {
+  VAPID_PUBLIC_KEY,
+  savePushSubscription,
+  getNotifications
+} = require('../helpers/notification-helper');
 
 // Authentication Middleware for Parents
 function requireParentAuth(req, res, next) {
@@ -794,11 +799,158 @@ router.get('/fees/receipt/:id', async (req, res) => {
 });
 
 // ---------------------------------------------
-// 8. TIMETABLE
+// 8. TIMETABLE (PARENT VIEW)
 // ---------------------------------------------
+const { getTimetableForClass, getTodaySchedule } = require('../helpers/timetable-helper');
+
 router.get('/timetable', requireParentAuth, async (req, res) => {
-    const { student } = await getStudentContext(req);
-    res.render('user/timetable', { student });
+    try {
+        const { student, allStudents } = await getStudentContext(req);
+        if (!student) return res.redirect('/login');
+
+        const database = db.get();
+        const studentClass = student.class || 'Class 10';
+        const schedule = await getTimetableForClass(database, studentClass);
+        const todayData = await getTodaySchedule(database, studentClass);
+
+        res.render('user/timetable', {
+            student,
+            allStudents,
+            schedule,
+            todayData
+        });
+    } catch (err) {
+        console.error("Parent timetable route error:", err);
+        res.redirect('/');
+    }
+});
+
+// ---------------------------------------------
+// 9. DAILY ACTIVITIES (PARENT VIEW)
+// ---------------------------------------------
+router.get('/activities', requireParentAuth, async (req, res) => {
+    try {
+        const { student, allStudents } = await getStudentContext(req);
+        if (!student) return res.redirect('/');
+
+        const classNum = Number(String(student.class).replace(/^Class\s*/i, ''));
+        const query = {
+            $or: [
+                { targetStudentId: student.studentId },
+                {
+                    $and: [
+                        { $or: [{ targetStudentId: null }, { targetStudentId: 'ALL' }, { targetStudentId: { $exists: false } }] },
+                        {
+                            $or: [
+                                { class: student.class },
+                                { class: `Class ${classNum}` },
+                                { class: classNum },
+                                { class: 'all' },
+                                { class: 'All Batches' }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        };
+
+        const activities = await db.get()
+            .collection(collections.DAILY_ACTIVITY_COLLECTION)
+            .find(query)
+            .sort({ date: -1, createdAt: -1 })
+            .toArray();
+
+        res.render('user/activities', {
+            student,
+            allStudents,
+            activities
+        });
+    } catch (err) {
+        console.error("Activities route error:", err);
+        res.redirect('/');
+    }
+});
+
+// ---------------------------------------------
+// 10. STUDENT MARKS & COMPARISON GRAPH (PARENT VIEW)
+// ---------------------------------------------
+router.get('/marks', requireParentAuth, async (req, res) => {
+    try {
+        const { student, allStudents } = await getStudentContext(req);
+        if (!student) return res.redirect('/');
+
+        const marksCol = db.get().collection(collections.STUDENT_MARKS_COLLECTION);
+        const allReports = await marksCol.find({ studentId: student.studentId }).sort({ createdAt: -1 }).toArray();
+
+        let activeReport = null;
+        if (req.query.reportId) {
+            try {
+                activeReport = allReports.find(r => r._id.toString() === req.query.reportId) || null;
+            } catch (e) {}
+        }
+        if (!activeReport && allReports.length > 0) {
+            activeReport = allReports[0];
+        }
+
+        const chartSubjects = activeReport ? activeReport.subjects.map(s => s.name) : [];
+        const chartSchoolMarks = activeReport ? activeReport.subjects.map(s => s.schoolMarks) : [];
+        const chartPaadashalaMarks = activeReport ? activeReport.subjects.map(s => s.paadashalaMarks) : [];
+
+        res.render('user/marks', {
+            student,
+            allStudents,
+            allReports,
+            activeReport,
+            chartSubjects,
+            chartSchoolMarks,
+            chartPaadashalaMarks
+        });
+    } catch (err) {
+        console.error("Marks parent view error:", err);
+        res.redirect('/');
+    }
+});
+
+// ---------------------------------------------
+// 11. WEB PUSH NOTIFICATION SUBSCRIBER API
+// ---------------------------------------------
+router.post('/api/push-subscribe', async (req, res) => {
+    try {
+        const subscription = req.body;
+        const studentId = req.session && req.session.studentId;
+        const parentPhone = req.session && req.session.parentPhone;
+
+        await savePushSubscription(db.get(), {
+            studentId,
+            parentPhone,
+            subscription
+        });
+
+        res.json({ success: true, message: 'Push subscription saved.' });
+    } catch (err) {
+        console.error("Push subscribe error:", err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// ---------------------------------------------
+// 12. IN-APP NOTIFICATIONS API
+// ---------------------------------------------
+router.get('/api/notifications', requireParentAuth, async (req, res) => {
+    try {
+        const { student } = await getStudentContext(req);
+        const parentPhone = req.session && req.session.parentPhone;
+
+        const notifs = await getNotifications(db.get(), {
+            studentId: student ? student.studentId : null,
+            parentPhone: parentPhone,
+            limit: 20
+        });
+
+        res.json({ success: true, notifications: notifs });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
 });
 
 module.exports = router;

@@ -7,5 +7,10 @@ module.exports = {
     ANNOUNCEMENT_COLLECTION: 'announcements',
     PARENT_COLLECTION: 'parents',
     FEE_COLLECTION: 'fees',
-    PAYMENT_COLLECTION: 'payments'
+    PAYMENT_COLLECTION: 'payments',
+    NOTIFICATION_COLLECTION: 'notifications',
+    PUSH_SUBSCRIPTION_COLLECTION: 'push-subscriptions',
+    DAILY_ACTIVITY_COLLECTION: 'daily-activities',
+    STUDENT_MARKS_COLLECTION: 'student-marks',
+    TIMETABLE_COLLECTION: 'timetables'
 };

@@ -5,7 +5,7 @@
   "scripts": {
     "start": "nodemon ./bin/www",
     "dev": "nodemon ./bin/www",
-    "test": "node test/fees.test.js"
+    "test": "node test/fees.test.js && node test/features.test.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -19,6 +19,7 @@
     "mongodb": "^7.5.0",
     "morgan": "^1.11.0",
     "nodemon": "^3.1.14",
-    "razorpay": "^2.9.8"
+    "razorpay": "^2.9.8",
+    "web-push": "^3.6.7"
   }
 }

@@ -1,0 +1,345 @@
+<div class="marks-page p-3 p-md-4">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1 class="page-title m-0">Student Marks Management</h1>
+            <p class="text-muted m-0">സ്കൂൾ പരീക്ഷാ മാർക്കുകളും പാഠശാലയിലെ മാർക്കുകളും രേഖപ്പെടുത്തുക (School vs Paadashala)</p>
+        </div>
+
+        <button
+            class="btn btn-primary d-flex align-items-center gap-2"
+            data-bs-toggle="modal"
+            data-bs-target="#newMarksModal">
+            <i class="bi bi-award-fill"></i>
+            <span>Add / Enter Student Marks</span>
+        </button>
+    </div>
+
+    <!-- ENTER MARKS MODAL -->
+    <div class="modal fade" id="newMarksModal" tabindex="-1" aria-labelledby="newMarksModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 18px; border: none; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.15);">
+                <form action="/admin/marks/save" method="POST">
+                    <div class="modal-header bg-light border-bottom px-4 py-3">
+                        <div>
+                            <h4 class="modal-title fw-bold text-dark m-0" id="newMarksModalLabel">
+                                <i class="bi bi-bar-chart-line-fill text-primary me-2"></i> Enter Student Exam Marks
+                            </h4>
+                            <small class="text-muted">സ്കൂൾ മാർക്കും പാഠശാല മാർക്കും ചേർത്ത് കമ്പാരിസൺ ഗ്രാഫ് തയ്യാറാക്കുക</small>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body p-4">
+                        <!-- Student Selection & Term Selection -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-12 col-md-4">
+                                <label class="form-label fw-semibold text-secondary small">
+                                    Select Student <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" name="studentId" id="marksStudentSelect" required>
+                                    <option value="" disabled selected>-- തെരഞ്ഞെടുക്കുക --</option>
+                                    {{#each students}}
+                                        <option value="{{this.studentId}}" data-name="{{this.name}}" data-class="{{this.class}}">
+                                            {{this.name}} ({{this.studentId}} - Class {{this.class}})
+                                        </option>
+                                    {{/each}}
+                                </select>
+                            </div>
+
+                            <div class="col-12 col-md-4">
+                                <label class="form-label fw-semibold text-secondary small">
+                                    Exam Term / Category <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" name="examTerm" required>
+                                    <option value="Term 1 (Onam / First Term)" selected>Term 1 (Onam / First Term)</option>
+                                    <option value="Term 2 (Christmas / Second Term)">Term 2 (Christmas / Second Term)</option>
+                                    <option value="Model Exam">Model Exam (മോഡൽ പരീക്ഷ)</option>
+                                    <option value="Final Exam (Annual)">Final Exam (വാർഷിക പരീക്ഷ)</option>
+                                    <option value="Unit Test / Weekly Test">Unit Test / Weekly Test</option>
+                                </select>
+                            </div>
+
+                            <div class="col-12 col-md-4">
+                                <label class="form-label fw-semibold text-secondary small">
+                                    Academic Year <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" name="academicYear" value="2026-2027" required>
+                            </div>
+                        </div>
+
+                        <!-- Subject-wise Marks Table -->
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <h6 class="fw-bold text-dark m-0">
+                                    <i class="bi bi-table text-primary me-1"></i> Subject-wise Marks Comparison
+                                </h6>
+                                <small class="text-muted" id="classSubjectHint">
+                                    ക്ലാസ് 1–8: Science | ക്ലാസ് 9–10: Physics, Chemistry, Biology (ഏത് സബ്ജക്റ്റും Add / Remove ചെയ്യാം)
+                                </small>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="addSubjectRowBtn">
+                                    <i class="bi bi-plus-circle me-1"></i> Add Subject
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive mb-2 border rounded-3 overflow-hidden">
+                            <table class="table align-middle table-bordered mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 32%;">Subject (വിഷയം)</th>
+                                        <th style="width: 18%;">Max Marks</th>
+                                        <th style="width: 22%;" class="text-primary">
+                                            <i class="bi bi-building me-1"></i> School Exam (സ്കൂൾ)
+                                        </th>
+                                        <th style="width: 22%;" class="text-success">
+                                            <i class="bi bi-book-half me-1"></i> Paadashala (പാഠശാല)
+                                        </th>
+                                        <th style="width: 6%; text-align: center;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="marksTableBody">
+                                    <!-- Populated dynamically based on student class or customized -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Quick add subject presets -->
+                        <div class="d-flex flex-wrap align-items-center gap-2 mb-3 p-2 bg-light rounded-3 border">
+                            <span class="small fw-bold text-secondary">Quick Add:</span>
+                            <button type="button" class="btn btn-xs btn-outline-secondary" onclick="addSubjectRow('Science', 100)">+ Science</button>
+                            <button type="button" class="btn btn-xs btn-outline-secondary" onclick="addSubjectRow('Physics', 100)">+ Physics</button>
+                            <button type="button" class="btn btn-xs btn-outline-secondary" onclick="addSubjectRow('Chemistry', 100)">+ Chemistry</button>
+                            <button type="button" class="btn btn-xs btn-outline-secondary" onclick="addSubjectRow('Biology', 100)">+ Biology</button>
+                            <button type="button" class="btn btn-xs btn-outline-secondary" onclick="addSubjectRow('Social Science', 100)">+ Social Science</button>
+                            <button type="button" class="btn btn-xs btn-outline-secondary" onclick="addSubjectRow('Hindi', 100)">+ Hindi</button>
+                            <button type="button" class="btn btn-xs btn-outline-secondary" onclick="addSubjectRow('Malayalam', 100)">+ Malayalam</button>
+                        </div>
+
+                        <!-- Overall Remarks -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold text-secondary small">
+                                <i class="bi bi-chat-quote-fill text-primary me-1"></i> Overall Assessment & Progress (ഓവറോൾ അസസ്മെന്റ് ആൻഡ് പ്രോഗ്രസ്)
+                            </label>
+                            <textarea class="form-control" name="overallRemarks" rows="2" placeholder="ഉദാ: പാഠശാലയിലെ പരിശീലനത്തിലൂടെ സ്കൂൾ പരീക്ഷയെ അപേക്ഷിച്ച് മികച്ച പുരോഗതി നേടിയിട്ടുണ്ട്. സയൻസിലും മാത്‌സിലും മികച്ച മുന്നേറ്റം."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer bg-light px-4 py-3">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary d-flex align-items-center gap-2">
+                            <i class="bi bi-cloud-arrow-up-fill"></i>
+                            <span>Save Marks & Generate Graph</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- RECORDED MARKS DIRECTORY TABLE -->
+    <div class="dash-card">
+        <div class="dash-card-header d-flex justify-content-between align-items-center">
+            <h3 class="dash-card-title">
+                <i class="bi bi-file-earmark-bar-graph text-primary me-2"></i> Published Student Marks & Reports
+            </h3>
+            <span class="text-muted small">Total: {{marksRecords.length}} Reports</span>
+        </div>
+
+        <div class="dash-card-body p-0">
+            <div class="table-responsive">
+                <table class="table align-middle table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Student Name</th>
+                            <th>Exam Term</th>
+                            <th>School Total</th>
+                            <th>Paadashala Total</th>
+                            <th>Improvement</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#if marksRecords.length}}
+                            {{#each marksRecords}}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-light text-dark border font-monospace">{{this.studentId}}</span>
+                                    </td>
+                                    <td>
+                                        <strong class="text-dark">{{this.studentName}}</strong>
+                                        <small class="d-block text-muted">{{this.class}}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary-subtle text-primary">{{this.examTerm}}</span>
+                                    </td>
+                                    <td>
+                                        <strong class="text-primary">{{this.totalSchool}} / {{this.totalMax}}</strong>
+                                        <small class="d-block text-muted">{{this.schoolPercentage}}%</small>
+                                    </td>
+                                    <td>
+                                        <strong class="text-success">{{this.totalPaadashala}} / {{this.totalMax}}</strong>
+                                        <small class="d-block text-muted">{{this.paadashalaPercentage}}%</small>
+                                    </td>
+                                    <td>
+                                        {{#if (gt this.improvement 0)}}
+                                            <span class="badge bg-success-subtle text-success fw-bold">
+                                                <i class="bi bi-arrow-up-right me-1"></i>+{{this.improvement}}%
+                                            </span>
+                                        {{else}}
+                                            <span class="badge bg-secondary-subtle text-secondary fw-bold">
+                                                {{this.improvement}}%
+                                            </span>
+                                        {{/if}}
+                                    </td>
+                                    <td>
+                                        <form action="/admin/marks/delete/{{this._id}}" method="POST" onsubmit="return confirm('ഈ മാർക്ക് റെക്കോർഡ് ഡിലീറ്റ് ചെയ്യണോ?');" style="display: inline;">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger border-0 p-1" title="Delete">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {{/each}}
+                        {{else}}
+                            <tr>
+                                <td colspan="7" class="text-center py-5 text-muted">
+                                    <i class="bi bi-award fs-1 text-secondary d-block mb-2"></i>
+                                    <div>ഇതുവരെ പരീക്ഷാ മാർക്കുകൾ ചേർത്തിട്ടില്ല.</div>
+                                    <small>മുകളിലുള്ള 'Add / Enter Student Marks' ബട്ടൺ ക്ലിക്ക് ചെയ്ത് ചേർക്കുക.</small>
+                                </td>
+                            </tr>
+                        {{/if}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+function createSubjectRowHtml(name, maxMarks, schoolMarks, paadashalaMarks) {
+    return `
+        <tr>
+            <td>
+                <input type="text" class="form-control form-control-sm fw-bold" name="subjectNames" value="${name}" placeholder="Subject Name" required>
+            </td>
+            <td>
+                <input type="number" class="form-control form-control-sm" name="maxMarks" value="${maxMarks || 100}" min="1" required>
+            </td>
+            <td>
+                <input type="number" class="form-control form-control-sm border-primary" name="schoolMarks" value="${schoolMarks !== undefined ? schoolMarks : ''}" placeholder="e.g. 65" min="0" max="100" step="0.5" required>
+            </td>
+            <td>
+                <input type="number" class="form-control form-control-sm border-success" name="paadashalaMarks" value="${paadashalaMarks !== undefined ? paadashalaMarks : ''}" placeholder="e.g. 88" min="0" max="100" step="0.5" required>
+            </td>
+            <td class="text-center">
+                <button type="button" class="btn btn-outline-danger btn-sm p-1" onclick="this.closest('tr').remove()" title="Remove this subject">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `;
+}
+
+function addSubjectRow(name = 'New Subject', maxMarks = 100) {
+    const tbody = document.getElementById('marksTableBody');
+    if (!tbody) return;
+    tbody.insertAdjacentHTML('beforeend', createSubjectRowHtml(name, maxMarks));
+}
+
+function populateDefaultSubjects(studentClass) {
+    const tbody = document.getElementById('marksTableBody');
+    const hint = document.getElementById('classSubjectHint');
+    if (!tbody) return;
+
+    let classNum = 10;
+    if (studentClass) {
+        const match = String(studentClass).match(/\d+/);
+        if (match) classNum = parseInt(match[0], 10);
+    }
+
+    tbody.innerHTML = '';
+
+    let subjects = [];
+    if (classNum <= 8) {
+        // Lower classes: Combined Science instead of separate Physics/Chemistry/Biology
+        subjects = [
+            'Mathematics',
+            'Science',
+            'Social Science',
+            'English'
+        ];
+        if (hint) {
+            hint.innerHTML = `<span class="badge bg-info-subtle text-info me-1">Class ${classNum}</span> ചെറിയ ക്ലാസ്സുകൾക്ക് ഫിസിക്സ്, കെമിസ്ട്രി, ബയോളജി എന്നതിന് പകരം <strong>Science</strong> നൽകിയിരിക്കുന്നു. ആവശ്യാനുസരണം മാറ്റാം.`;
+        }
+    } else {
+        // Higher classes (9, 10, etc.): Physics, Chemistry, Biology separated
+        subjects = [
+            'Mathematics',
+            'Physics',
+            'Chemistry',
+            'Biology',
+            'Social Science',
+            'English'
+        ];
+        if (hint) {
+            hint.innerHTML = `<span class="badge bg-primary-subtle text-primary me-1">Class ${classNum}</span> ഹൈസ്കൂൾ ക്ലാസ്സുകൾക്ക് <strong>Physics, Chemistry, Biology</strong> വെവ്വേറെ നൽകിയിരിക്കുന്നു.`;
+        }
+    }
+
+    subjects.forEach(sub => {
+        tbody.insertAdjacentHTML('beforeend', createSubjectRowHtml(sub, 100));
+    });
+}
+
+function initMarksPage() {
+    const studentSelect = document.getElementById('marksStudentSelect');
+    const addBtn = document.getElementById('addSubjectRowBtn');
+
+    if (studentSelect) {
+        studentSelect.removeEventListener('change', handleStudentMarksChange);
+        studentSelect.addEventListener('change', handleStudentMarksChange);
+
+        // If an option is already selected
+        if (studentSelect.value) {
+            const selectedOpt = studentSelect.options[studentSelect.selectedIndex];
+            populateDefaultSubjects(selectedOpt.getAttribute('data-class'));
+        } else {
+            // Default to Class 10 subjects
+            populateDefaultSubjects('Class 10');
+        }
+    }
+
+    if (addBtn) {
+        addBtn.onclick = function() {
+            const customName = prompt("പുതിയ സബ്ജക്റ്റിന്റെ പേര് നൽകുക (Enter Subject Name):", "Hindi");
+            if (customName && customName.trim()) {
+                addSubjectRow(customName.trim(), 100);
+            }
+        };
+    }
+}
+
+function handleStudentMarksChange() {
+    const studentSelect = document.getElementById('marksStudentSelect');
+    if (!studentSelect) return;
+    const selectedOpt = studentSelect.options[studentSelect.selectedIndex];
+    if (selectedOpt) {
+        const sClass = selectedOpt.getAttribute('data-class');
+        populateDefaultSubjects(sClass);
+    }
+}
+
+// Initialize on DOM ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMarksPage);
+} else {
+    initMarksPage();
+}
+</script>
