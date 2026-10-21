@@ -1,51 +1,493 @@
 <main class="app">
 
+  <!-- HEADER -->
   <header class="header" style="padding-bottom: 1.5rem;">
     <div class="subpage-header">
       <a href="/" class="back-btn">
-        <i class="bi bi-chevron-left"></i> Back
+        <i class="bi bi-chevron-left"></i> Dashboard
       </a>
-      <p class="brand-name" style="margin: 0; font-size: 1.1rem; color: #fff;">Fee Status</p>
-      <div style="width: 60px;"></div>
+      <p class="brand-name" style="margin: 0; font-size: 1.1rem; color: #fff;">Fee Portal</p>
+      
+      {{#if (gt allStudents.length 1)}}
+        <!-- Student Switcher for multi-student parents -->
+        <select
+          onchange="window.location.href='/fees?studentId=' + this.value"
+          style="background: rgba(255, 255, 255, 0.2); color: #fff; border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 9999px; padding: 0.25rem 0.6rem; font-size: 0.75rem; font-weight: 600; outline: none; cursor: pointer;">
+          {{#each allStudents}}
+            <option value="{{this.studentId}}" style="color: #000;" {{#if (eq this.studentId ../student.studentId)}}selected{{/if}}>
+              {{this.name}}
+            </option>
+          {{/each}}
+        </select>
+      {{else}}
+        <div style="width: 60px;"></div>
+      {{/if}}
     </div>
 
     <div style="margin-top: 1rem;">
       <h1 style="font-size: 1.5rem; color: #fff; margin: 0; line-height: 1.2;">
-        {{#if student.name}}{{student.name}}{{else}}Sidharth{{/if}}'s Fees
+        {{#if student.name}}{{student.name}}{{else}}Student{{/if}}'s Fees
       </h1>
       <p style="color: rgba(255,255,255,0.85); font-size: 0.85rem; margin: 0.25rem 0 0;">
-        അധ്യയന വർഷ ഫീസ് വിവരങ്ങൾ
+        Academic Year {{#if student.academicYear}}{{student.academicYear}}{{else}}2026–2027{{/if}} • 10 Months (June – March)
       </p>
     </div>
   </header>
 
   <section class="section" style="padding-top: 1.25rem;">
 
-    <div class="card-box">
-      <div class="card-box-header">
-        <div class="card-box-title">
-          <i class="bi bi-credit-card-2-front" style="color: #d97706;"></i>
-          <span>Academic Year 2026–2027</span>
+    {{#unless hasFeesConfigured}}
+      <!-- NOTICE WHEN FEES ARE NOT YET CONFIGURED BY ADMIN -->
+      <div class="card-box text-center py-4" style="text-align: center;">
+        <div style="width: 60px; height: 60px; border-radius: 50%; background: #fef3c7; color: #d97706; display: inline-flex; align-items: center; justify-content: center; font-size: 1.8rem; margin-bottom: 0.85rem;">
+          <i class="bi bi-clock-history"></i>
         </div>
-        <span class="badge" style="background: #fef3c7; color: #b45309; font-size: 0.75rem; font-weight: 700;">Active</span>
+        <h3 style="font-size: 1.15rem; font-weight: 700; color: #1e293c; margin-bottom: 0.35rem;">Fee Structure Pending</h3>
+        <p style="color: #64748b; font-size: 0.875rem; max-width: 320px; margin: 0 auto;">
+          ഈ വിദ്യാർത്ഥിക്കുള്ള പ്രതിമാസ ഫീസ് അഡ്മിൻ ക്രമീകരിച്ചു കൊണ്ടിരിക്കുകയാണ്. ഉടൻ ലഭ്യമാകും.
+        </p>
+      </div>
+    {{else}}
+
+      <!-- 1. ACADEMIC YEAR FINANCIAL SUMMARY -->
+      <div class="card-box" style="background: linear-gradient(135deg, #ffffff, #f8fafc); border: 1.5px solid #e2e8f0;">
+        <div class="card-box-header" style="border-bottom: 1px dashed #e2e8f0;">
+          <div class="card-box-title">
+            <i class="bi bi-wallet2" style="color: #0284c7;"></i>
+            <span>Summary Balance</span>
+          </div>
+          <span class="badge" style="background: #e0f2fe; color: #0369a1; font-weight: 700; font-size: 0.75rem;">
+            {{student.academicYear}}
+          </span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.65rem; text-align: center; margin-top: 0.5rem;">
+          <div style="background: #f1f5f9; padding: 0.75rem 0.5rem; border-radius: 0.85rem;">
+            <span style="font-size: 0.7rem; color: #64748b; font-weight: 700; text-transform: uppercase; display: block;">Total Fee</span>
+            <strong style="font-size: 1.05rem; color: #0f172a; display: block; margin-top: 0.2rem;">₹{{formatCurrency totalAcademicFees}}</strong>
+            <small style="font-size: 0.65rem; color: #64748b;">10 Months</small>
+          </div>
+
+          <div style="background: #ecfdf5; padding: 0.75rem 0.5rem; border-radius: 0.85rem;">
+            <span style="font-size: 0.7rem; color: #059669; font-weight: 700; text-transform: uppercase; display: block;">Paid</span>
+            <strong style="font-size: 1.05rem; color: #047857; display: block; margin-top: 0.2rem;">₹{{formatCurrency totalPaid}}</strong>
+            <small style="font-size: 0.65rem; color: #059669;">{{paidCount}} Paid</small>
+          </div>
+
+          <div style="background: #fff7ed; padding: 0.75rem 0.5rem; border-radius: 0.85rem;">
+            <span style="font-size: 0.7rem; color: #ea580c; font-weight: 700; text-transform: uppercase; display: block;">Pending</span>
+            <strong style="font-size: 1.05rem; color: #c2410c; display: block; margin-top: 0.2rem;">₹{{formatCurrency totalOutstanding}}</strong>
+            <small style="font-size: 0.65rem; color: #ea580c;">{{pendingCount}} Pending</small>
+          </div>
+        </div>
+
+        {{#if (gt totalOutstanding 0)}}
+          <div style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button
+              id="payFullBalanceBtn"
+              class="btn"
+              style="flex: 1; min-width: 160px; background: #0284c7; color: #ffffff; border: none; border-radius: 0.75rem; padding: 0.65rem 1rem; font-weight: 700; font-size: 0.875rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25); cursor: pointer;">
+              <i class="bi bi-lightning-charge-fill"></i>
+              <span>Pay Full Pending (₹{{formatCurrency totalOutstanding}})</span>
+            </button>
+            <button
+              id="paySelectedBtn"
+              class="btn"
+              style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; border-radius: 0.75rem; padding: 0.65rem 1rem; font-weight: 700; font-size: 0.875rem; display: none; align-items: center; justify-content: center; gap: 0.4rem; cursor: pointer;">
+              <i class="bi bi-check2-square"></i>
+              <span id="selectedPayLabel">Pay Selected</span>
+            </button>
+          </div>
+        {{else}}
+          <div style="margin-top: 0.85rem; background: #dcfce7; color: #166534; border-radius: 0.75rem; padding: 0.6rem 0.85rem; font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>All fees for academic year {{student.academicYear}} are fully settled!</span>
+          </div>
+        {{/if}}
       </div>
 
-      <div class="info-list">
-        <div class="info-item">
-          <span class="label"><i class="bi bi-person"></i> Student Name</span>
-          <span class="val">{{student.name}}</span>
+      <!-- 2. 10 ACADEMIC MONTHS BREAKDOWN (JUNE - MARCH) -->
+      <div class="card-box" style="padding: 1rem;">
+        <div class="card-box-header" style="margin-bottom: 0.75rem; padding-bottom: 0.5rem;">
+          <div class="card-box-title" style="font-size: 1rem;">
+            <i class="bi bi-calendar3" style="color: #6366f1;"></i>
+            <span>Monthly Fee Schedule (10 Months)</span>
+          </div>
+          <span style="font-size: 0.75rem; color: #64748b;">Academic Order</span>
         </div>
-        <div class="info-item">
-          <span class="label"><i class="bi bi-mortarboard"></i> Class & Shift</span>
-          <span class="val">{{student.class}} ({{student.shift}})</span>
-        </div>
-        <div class="info-item">
-          <span class="label"><i class="bi bi-check2-circle"></i> Fee Status</span>
-          <span class="val"><span class="badge" style="background: #dcfce7; color: #15803d; font-size: 0.8rem; font-weight: 700;">Up to date</span></span>
+
+        <div style="display: flex; flex-direction: column; gap: 0.65rem;">
+          {{#each records}}
+            <div
+              class="fee-month-row"
+              data-fee-id="{{this._id}}"
+              data-amount="{{this.amount}}"
+              data-status="{{this.status}}"
+              style="border: 1px solid {{#if (eq this.status 'paid')}}#dcfce7{{else if (eq this.status 'pending')}}#fed7aa{{else}}#e2e8f0{{/if}}; background: {{#if (eq this.status 'paid')}}#f0fdf4{{else if (eq this.status 'pending')}}#fffaf5{{else}}#ffffff{{/if}}; border-radius: 0.85rem; padding: 0.75rem 0.85rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; transition: border-color 0.15s ease;">
+
+              <!-- Left: Checkbox + Month details -->
+              <div style="display: flex; align-items: center; gap: 0.65rem; min-width: 0;">
+                {{#if (eq this.status 'paid')}}
+                  <div style="width: 22px; height: 22px; border-radius: 50%; background: #22c55e; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; flex-shrink: 0;">
+                    <i class="bi bi-check-lg"></i>
+                  </div>
+                {{else}}
+                  <input
+                    type="checkbox"
+                    class="fee-checkbox"
+                    value="{{this._id}}"
+                    data-amount="{{this.amount}}"
+                    data-month="{{this.month}}"
+                    style="width: 20px; height: 20px; accent-color: #0284c7; cursor: pointer; flex-shrink: 0;">
+                {{/if}}
+
+                <div style="min-width: 0;">
+                  <div style="display: flex; align-items: center; gap: 0.4rem;">
+                    <strong style="font-size: 0.95rem; color: #0f172a;">{{this.month}} {{this.year}}</strong>
+                    <span style="font-size: 0.7rem; color: #64748b; font-weight: 600;">(Month {{this.order}}/10)</span>
+                  </div>
+
+                  <div style="display: flex; align-items: center; gap: 0.4rem; margin-top: 0.15rem; flex-wrap: wrap;">
+                    {{#if (eq this.status 'paid')}}
+                      <span style="background: #dcfce7; color: #15803d; font-size: 0.68rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 9999px;">
+                        <i class="bi bi-check-circle-fill"></i> Paid
+                      </span>
+                      {{#if this.paidAt}}
+                        <span style="font-size: 0.68rem; color: #64748b;">on {{formatDate this.paidAt}}</span>
+                      {{/if}}
+                    {{else if (eq this.status 'pending')}}
+                      <span style="background: #ffedd5; color: #c2410c; font-size: 0.68rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 9999px;">
+                        <i class="bi bi-exclamation-circle-fill"></i> Pending
+                      </span>
+                      <span style="font-size: 0.68rem; color: #9a3412;">Due {{formatDate this.dueDate}}</span>
+                    {{else}}
+                      <span style="background: #f1f5f9; color: #475569; font-size: 0.68rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 9999px;">
+                        Upcoming
+                      </span>
+                      <span style="font-size: 0.68rem; color: #64748b;">Due {{formatDate this.dueDate}}</span>
+                    {{/if}}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right: Amount + Action button -->
+              <div style="text-align: right; flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 0.3rem;">
+                <span style="font-size: 1rem; font-weight: 800; color: #0f172a; font-family: monospace;">
+                  ₹{{formatCurrency this.amount}}
+                </span>
+
+                {{#if (eq this.status 'paid')}}
+                  {{#if this.paymentId}}
+                    <a
+                      href="/fees/receipt/{{this.paymentId}}"
+                      style="font-size: 0.72rem; color: #0284c7; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 0.2rem; background: #e0f2fe; padding: 0.2rem 0.5rem; border-radius: 0.4rem;">
+                      <i class="bi bi-receipt"></i> Receipt
+                    </a>
+                  {{else}}
+                    <span style="font-size: 0.7rem; color: #16a34a; font-weight: 700;">Settled</span>
+                  {{/if}}
+                {{else}}
+                  <button
+                    type="button"
+                    class="pay-single-btn"
+                    data-fee-id="{{this._id}}"
+                    data-month="{{this.month}}"
+                    data-amount="{{this.amount}}"
+                    style="font-size: 0.75rem; background: #0284c7; color: #fff; border: none; padding: 0.25rem 0.65rem; border-radius: 0.4rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem;">
+                    Pay Now
+                  </button>
+                {{/if}}
+              </div>
+
+            </div>
+          {{/each}}
         </div>
       </div>
-    </div>
+
+      <!-- 3. PAYMENT HISTORY & RECEIPTS -->
+      <div class="card-box" style="padding: 1rem;">
+        <div class="card-box-header" style="margin-bottom: 0.75rem; padding-bottom: 0.5rem;">
+          <div class="card-box-title" style="font-size: 1rem;">
+            <i class="bi bi-clock-history" style="color: #059669;"></i>
+            <span>Payment History & Receipts</span>
+          </div>
+          <span style="font-size: 0.75rem; color: #64748b;">{{payments.length}} Transactions</span>
+        </div>
+
+        {{#if payments.length}}
+          <div style="display: flex; flex-direction: column; gap: 0.65rem;">
+            {{#each payments}}
+              <div style="border: 1px solid #e2e8f0; border-radius: 0.85rem; padding: 0.75rem 0.85rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; background: #fff;">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 0.4rem;">
+                    <span style="font-size: 0.85rem; font-weight: 800; color: #0f172a;">{{this.receiptNumber}}</span>
+                    <span style="background: #dcfce7; color: #15803d; font-size: 0.65rem; font-weight: 700; padding: 0.1rem 0.4rem; border-radius: 9999px;">
+                      Verified
+                    </span>
+                  </div>
+                  <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.15rem;">
+                    {{formatDate this.paidAt}} • Months: <strong>{{#each this.coveredMonths}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}</strong>
+                  </div>
+                  {{#if this.razorpayPaymentId}}
+                    <div style="font-size: 0.68rem; color: #94a3b8; font-family: monospace; margin-top: 0.1rem;">
+                      Ref: {{this.razorpayPaymentId}}
+                    </div>
+                  {{/if}}
+                </div>
+
+                <div style="text-align: right; flex-shrink: 0;">
+                  <div style="font-size: 1rem; font-weight: 800; color: #047857; font-family: monospace;">
+                    ₹{{formatCurrency this.amount}}
+                  </div>
+                  <a
+                    href="/fees/receipt/{{this._id}}"
+                    style="font-size: 0.75rem; color: #0284c7; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem; margin-top: 0.25rem;">
+                    <i class="bi bi-printer"></i> View Receipt
+                  </a>
+                </div>
+              </div>
+            {{/each}}
+          </div>
+        {{else}}
+          <div style="text-align: center; padding: 1.5rem 0; color: #64748b; font-size: 0.85rem;">
+            <i class="bi bi-receipt" style="font-size: 1.5rem; display: block; margin-bottom: 0.35rem; color: #94a3b8;"></i>
+            ഇതുവരെ പേയ്‌മെന്റുകൾ ഒന്നും രേഖപ്പെടുത്തിയിട്ടില്ല.
+          </div>
+        {{/if}}
+      </div>
+
+    {{/unless}}
 
   </section>
 
 </main>
+
+<!-- PAYMENT FAILURE / ASSISTANCE MODAL -->
+<div id="paymentFailureModal" style="display: none; position: fixed; inset: 0; z-index: 99999; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 1rem;">
+  <div style="background: #ffffff; width: 100%; max-width: 440px; border-radius: 1.5rem; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35); animation: popIn 0.25s ease-out;">
+    <div style="background: #fff1f2; padding: 1.5rem; text-align: center; border-bottom: 1px solid #ffe4e6;">
+      <div style="width: 58px; height: 58px; border-radius: 50%; background: #e11d48; color: #ffffff; display: inline-flex; align-items: center; justify-content: center; font-size: 1.75rem; margin-bottom: 0.75rem; box-shadow: 0 4px 12px rgba(225, 29, 72, 0.3);">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+      </div>
+      <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #9f1239;">പേയ്‌മെന്റ് പൂർത്തിയായില്ല</h3>
+      <p style="margin: 0.35rem 0 0; font-size: 0.85rem; color: #be123c; font-weight: 600;">Payment Incomplete or Cancelled</p>
+    </div>
+
+    <div style="padding: 1.5rem;">
+      <div style="background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 1rem; padding: 1rem; margin-bottom: 1.25rem;">
+        <div style="display: flex; gap: 0.65rem; align-items: flex-start;">
+          <i class="bi bi-info-circle-fill" style="color: #d97706; font-size: 1.3rem; flex-shrink: 0; margin-top: 0.1rem;"></i>
+          <div style="font-size: 0.85rem; color: #92400e; line-height: 1.45;">
+            <strong>Don't Worry!</strong> നിങ്ങളുടെ ബാങ്ക് അക്കൗണ്ടിൽ നിന്നോ കാർഡിൽ നിന്നോ പണം ഡെബിറ്റ് ആയിട്ടുണ്ടെങ്കിൽ, അത് <strong>3-5 പ്രവൃത്തി ദിവസങ്ങൾക്കുള്ളിൽ</strong> നിങ്ങളുടെ അക്കൗണ്ടിലേക്ക് തനിയെ റീഫണ്ട് ആകുന്നതാണ്.
+          </div>
+        </div>
+      </div>
+
+      <p style="font-size: 0.85rem; color: #475569; line-height: 1.5; margin: 0 0 1rem;">
+        പണം ഡെബിറ്റ് ആവുകയും റെസീപ്റ്റ് ലഭിക്കാതിരിക്കുകയും ചെയ്താൽ ദയവായി താഴെ പറയുന്ന നമ്പറിലോ ഓഫീസിലോ ബന്ധപ്പെടുക:
+      </p>
+
+      <div style="background: #f8fafc; border-radius: 0.75rem; padding: 0.85rem 1rem; border: 1px solid #e2e8f0; margin-bottom: 1.25rem; font-size: 0.85rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+          <span style="color: #64748b;"><i class="bi bi-telephone-fill me-1 text-primary"></i> ഓഫീസ് ഹെൽപ്പ്‌ലൈൻ:</span>
+          <a href="tel:9876543210" style="color: #0284c7; font-weight: 800; text-decoration: none;">+91 9876543210</a>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <span style="color: #64748b;"><i class="bi bi-envelope-fill me-1 text-primary"></i> ഇമെയിൽ സപ്പോർട്ട്:</span>
+          <a href="mailto:support@paadashala.in" style="color: #0284c7; font-weight: 700; text-decoration: none;">support@paadashala.in</a>
+        </div>
+        <div id="failureOrderRef" style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed #cbd5e1; font-size: 0.75rem; color: #94a3b8; font-family: monospace;"></div>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem;">
+        <button
+          type="button"
+          id="closeFailureModalBtn"
+          style="flex: 1; padding: 0.7rem; border-radius: 0.75rem; border: 1px solid #cbd5e1; background: #ffffff; color: #475569; font-weight: 700; font-size: 0.875rem; cursor: pointer;">
+          ക്ലോസ് ചെയ്യുക (Close)
+        </button>
+        <button
+          type="button"
+          id="retryFailureModalBtn"
+          style="flex: 1; padding: 0.7rem; border-radius: 0.75rem; border: none; background: #0284c7; color: #ffffff; font-weight: 700; font-size: 0.875rem; cursor: pointer; box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25);">
+          വീണ്ടും ശ്രമിക്കുക (Retry)
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RAZORPAY CHECKOUT OFFICIAL SCRIPT -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const checkboxes = document.querySelectorAll('.fee-checkbox');
+  const paySelectedBtn = document.getElementById('paySelectedBtn');
+  const selectedPayLabel = document.getElementById('selectedPayLabel');
+  const payFullBalanceBtn = document.getElementById('payFullBalanceBtn');
+  const paySingleBtns = document.querySelectorAll('.pay-single-btn');
+  const failureModal = document.getElementById('paymentFailureModal');
+  const failureOrderRef = document.getElementById('failureOrderRef');
+  const closeFailureModalBtn = document.getElementById('closeFailureModalBtn');
+  const retryFailureModalBtn = document.getElementById('retryFailureModalBtn');
+
+  let lastPaymentPayload = null;
+
+  function showFailureModal(orderId, errorMsg) {
+    if (failureOrderRef) {
+      failureOrderRef.textContent = 'Order Ref: ' + (orderId || 'N/A') + (errorMsg ? ' (' + errorMsg + ')' : '');
+    }
+    if (failureModal) {
+      failureModal.style.display = 'flex';
+    }
+  }
+
+  function hideFailureModal() {
+    if (failureModal) {
+      failureModal.style.display = 'none';
+    }
+  }
+
+  if (closeFailureModalBtn) {
+    closeFailureModalBtn.addEventListener('click', hideFailureModal);
+  }
+
+  if (retryFailureModalBtn) {
+    retryFailureModalBtn.addEventListener('click', function () {
+      hideFailureModal();
+      if (lastPaymentPayload) {
+        initiatePayment(lastPaymentPayload);
+      }
+    });
+  }
+
+  // Update selection UI when checkboxes change
+  function updateSelection() {
+    const selected = Array.from(checkboxes).filter(cb => cb.checked);
+    if (selected.length > 0) {
+      const sum = selected.reduce((acc, cb) => acc + (parseFloat(cb.getAttribute('data-amount')) || 0), 0);
+      paySelectedBtn.style.display = 'inline-flex';
+      selectedPayLabel.textContent = `Pay Selected (${selected.length} Months • ₹${sum.toLocaleString('en-IN')})`;
+    } else {
+      paySelectedBtn.style.display = 'none';
+    }
+  }
+
+  checkboxes.forEach(cb => {
+    cb.addEventListener('change', updateSelection);
+  });
+
+  // Common payment processor: ONLY uses official Razorpay Checkout modal
+  async function initiatePayment(payload) {
+    lastPaymentPayload = payload;
+
+    try {
+      // 1. Create real order on server
+      const res = await fetch('/fees/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const orderData = await res.json();
+      if (!orderData.success) {
+        alert(orderData.error || 'Failed to initiate payment.');
+        return;
+      }
+
+      // 2. Open Official Razorpay Checkout Modal
+      const options = {
+        key: orderData.keyId,
+        amount: orderData.amount, // in paise
+        currency: orderData.currency || 'INR',
+        name: 'Paadashala After School',
+        description: `Fees for ${orderData.coveredMonths.join(', ')}`,
+        order_id: orderData.orderId,
+        prefill: {
+          name: orderData.studentName || '',
+          contact: orderData.parentPhone || ''
+        },
+        theme: {
+          color: '#0284c7'
+        },
+        handler: async function (response) {
+          // 3. Cryptographic Signature Verification on server
+          try {
+            const verifyRes = await fetch('/fees/verify-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                paymentRecordId: orderData.paymentRecordId
+              })
+            });
+
+            const verifyData = await verifyRes.json();
+            if (verifyData.success) {
+              // Redirect to confirmed receipt ONLY when payment is successfully verified
+              window.location.href = '/fees/receipt/' + verifyData.receiptId;
+            } else {
+              showFailureModal(orderData.orderId, verifyData.error || 'Verification Failed');
+            }
+          } catch (e) {
+            console.error('Verification error:', e);
+            showFailureModal(orderData.orderId, 'Network Verification Error');
+          }
+        },
+        modal: {
+          ondismiss: function () {
+            console.log('Payment modal dismissed by user.');
+            showFailureModal(orderData.orderId, 'User dismissed payment modal');
+          }
+        }
+      };
+
+      const rzp = new Razorpay(options);
+      rzp.on('payment.failed', function (response) {
+        console.error('Payment failed:', response.error);
+        showFailureModal(orderData.orderId, response.error ? response.error.description : 'Transaction Failed');
+      });
+
+      rzp.open();
+
+    } catch (err) {
+      console.error('Checkout error:', err);
+      alert('An unexpected error occurred while initiating checkout. Please try again.');
+    }
+  }
+
+  // Handle "Pay Full Pending Balance"
+  if (payFullBalanceBtn) {
+    payFullBalanceBtn.addEventListener('click', function () {
+      initiatePayment({ fullBalance: true });
+    });
+  }
+
+  // Handle "Pay Selected Months"
+  if (paySelectedBtn) {
+    paySelectedBtn.addEventListener('click', function () {
+      const selectedIds = Array.from(checkboxes)
+        .filter(cb => cb.checked)
+        .map(cb => cb.value);
+
+      if (selectedIds.length === 0) {
+        alert('Please select at least one month.');
+        return;
+      }
+      initiatePayment({ feeIds: selectedIds });
+    });
+  }
+
+  // Handle single month "Pay Now"
+  paySingleBtns.forEach(btn => {
+    btn.addEventListener('click', function () {
+      const feeId = this.getAttribute('data-fee-id');
+      initiatePayment({ feeIds: [feeId] });
+    });
+  });
+
+});
+</script>

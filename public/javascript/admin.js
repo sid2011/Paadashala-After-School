@@ -422,66 +422,149 @@ function setupVoiceRecognition() {
         return checkedLang ? checkedLang.value : 'ml-IN';
     }
 
-    function startVoiceRecording() {
+  
+function startVoiceRecording() {
+    if (isRecording) return;
+
+    const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) return;
+
+    shouldKeepListening = true;
+    createRecognition();
+
+    function createRecognition() {
+        if (!shouldKeepListening) return;
+
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = getSelectedLanguage();
+
+        recognition.onstart = function () {
+            isRecording = true;
+
+            voiceBtn.classList.remove("btn-outline-danger");
+            voiceBtn.classList.add(
+                "btn-danger", "text-white", "recording-pulse"
+            );
+
+            if (voiceBtnText) {
+                voiceBtnText.textContent =
+                    "Listening... (നിർത്താൻ ക്ലിക്ക് ചെയ്യൂ)";
+            }
+
+            if (voiceStatus) {
+                voiceStatus.textContent =
+                    "മൈക്ക് പ്രവർത്തിക്കുന്നു... സംസാരിക്കൂ!";
+            }
+        };
+
+        
+recognition.onresult = function (event) {
+    let finalTranscript = "";
+
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+
+        if (event.results[i].isFinal) {
+            finalTranscript += transcript + " ";
+        }
+    }
+
+    if (finalTranscript && opinionText) {
+        const existingText = opinionText.value.trim();
+
+        opinionText.value = existingText
+            ? existingText + " " + finalTranscript.trim()
+            : finalTranscript.trim();
+
+        opinionText.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+};
+
+        recognition.onerror = function (event) {
+            console.warn("Speech recognition error:", event.error);
+
+            if (voiceStatus) {
+                voiceStatus.textContent =
+                    `Speech recognition error: ${event.error}`;
+            }
+
+            // These errors require the user to start again.
+            if (
+                ["not-allowed", "service-not-allowed", "audio-capture"]
+                    .includes(event.error)
+            ) {
+                shouldKeepListening = false;
+            }
+        };
+
+        recognition.onend = function () {
+            isRecording = false;
+
+            if (recognition) recognition = null;
+
+            // Restart only if the teacher hasn't clicked Stop.
+            if (shouldKeepListening) {
+                createRecognition();
+            } else {
+                resetVoiceButton();
+            }
+        };
+
         try {
-            recognition = new SpeechRecognition();
-            recognition.continuous = true;
-            recognition.interimResults = true;
-            recognition.lang = getSelectedLanguage();
-
-            recognition.onstart = function () {
-                isRecording = true;
-                voiceBtn.classList.remove("btn-outline-danger");
-                voiceBtn.classList.add("btn-danger", "text-white", "recording-pulse");
-                if (voiceBtnText) voiceBtnText.textContent = "Listening... (നിർത്താൻ ക്ലിക്ക് ചെയ്യൂ)";
-                if (voiceStatus) voiceStatus.innerHTML = '<span class="text-danger fw-bold"><i class="bi bi-record-circle-fill me-1"></i> മൈക്ക് പ്രവർത്തിക്കുന്നു... സംസാരിക്കൂ!</span>';
-            };
-
-            recognition.onresult = function (event) {
-                let finalTranscript = '';
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    if (event.results[i].isFinal) {
-                        finalTranscript += event.results[i][0].transcript + ' ';
-                    }
-                }
-                if (finalTranscript && opinionText) {
-                    opinionText.value = (opinionText.value + " " + finalTranscript).trim();
-                }
-            };
-
-            recognition.onerror = function (event) {
-                console.warn("Speech recognition error:", event.error);
-                if (voiceStatus) {
-                    voiceStatus.innerHTML = `<span class="text-danger">മൈക്ക് എറർ: ${event.error}</span>`;
-                }
-                stopVoiceRecording();
-            };
-
-            recognition.onend = function () {
-                stopVoiceRecording();
-            };
-
             recognition.start();
         } catch (err) {
             console.error("Speech recognition start error:", err);
-            stopVoiceRecording();
+            shouldKeepListening = false;
+            isRecording = false;
+            resetVoiceButton();
+        }
+    }
+}
+
+function stopVoiceRecording() {
+    shouldKeepListening = false;
+    isRecording = false;
+
+    const currentRecognition = recognition;
+    recognition = null;
+
+    if (currentRecognition) {
+        try {
+            currentRecognition.stop();
+        } catch (err) {
+            console.warn("Could not stop recognition:", err);
         }
     }
 
-    function stopVoiceRecording() {
-        isRecording = false;
-        if (recognition) {
-            try { recognition.stop(); } catch (e) {}
-            recognition = null;
-        }
-        if (voiceBtn) {
-            voiceBtn.classList.remove("btn-danger", "text-white", "recording-pulse");
-            voiceBtn.classList.add("btn-outline-danger");
-        }
-        if (voiceBtnText) voiceBtnText.textContent = "Click to Speak (സംസാരിച്ചു തുടങ്ങൂ)";
-        if (voiceStatus) voiceStatus.innerHTML = "വോയ്സ് റെക്കോർഡിംഗ് പൂർത്തിയായി. ആവശ്യമെങ്കിൽ തിരുത്താം.";
+    resetVoiceButton();
+}
+
+function resetVoiceButton() {
+    if (voiceBtn) {
+        voiceBtn.classList.remove(
+            "btn-danger", "text-white", "recording-pulse"
+        );
+        voiceBtn.classList.add("btn-outline-danger");
+    }
+
+    if (voiceBtnText) {
+        voiceBtnText.textContent =
+            "Click to Speak (സംസാരിച്ചു തുടങ്ങൂ)";
+    }
+
+    if (voiceStatus) {
+        voiceStatus.textContent =
+            "വോയ്സ് റെക്കോർഡിംഗ് പൂർത്തിയായി. ആവശ്യമെങ്കിൽ തിരുത്താം.";
     }
 }
+      if (voiceBtnText) voiceBtnText.textContent = "Click to Speak (സംസാരിച്ചു തുടങ്ങൂ)";
+        if (voiceStatus) voiceStatus.innerHTML = "വോയ്സ് റെക്കോർഡിംഗ് പൂർത്തിയായി. ആവശ്യമെങ്കിൽ തിരുത്താം.";
+    }
+
 
 // Initialize on page load
 document.addEventListener("DOMContentLoaded", function () {

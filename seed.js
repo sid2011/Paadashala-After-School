@@ -10,6 +10,7 @@ const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
 const collections = require('./config/collections');
+const { ensureFeeIndexes, generateStudentFees } = require('./helpers/fee-helper');
 
 async function seedDatabase() {
     const uri = process.env.MONGODB_URI;
@@ -40,6 +41,8 @@ async function seedDatabase() {
                 class: "Class 10",
                 shift: "Morning",
                 academicYear: "2026-2027",
+                monthlyFee: 5000,
+                admissionMonth: "June",
                 address: "Paadashala Campus, Kozhikode",
                 createdAt: new Date("2026-06-01")
             },
@@ -51,6 +54,8 @@ async function seedDatabase() {
                 class: "Class 8",
                 shift: "Morning",
                 academicYear: "2026-2027",
+                monthlyFee: 4500,
+                admissionMonth: "June",
                 address: "Green Valley, Mavoor Road, Calicut",
                 createdAt: new Date("2026-06-02")
             },
@@ -62,6 +67,8 @@ async function seedDatabase() {
                 class: "Class 8",
                 shift: "Afternoon",
                 academicYear: "2026-2027",
+                monthlyFee: 4500,
+                admissionMonth: "June",
                 address: "Souparnika, Palazhi, Calicut",
                 createdAt: new Date("2026-06-05")
             },
@@ -73,6 +80,8 @@ async function seedDatabase() {
                 class: "Class 8",
                 shift: "Evening",
                 academicYear: "2026-2027",
+                monthlyFee: 4500,
+                admissionMonth: "June",
                 address: "Al-Huda, Feroke, Kozhikode",
                 createdAt: new Date("2026-06-08")
             },
@@ -84,8 +93,10 @@ async function seedDatabase() {
                 class: "Class 5",
                 shift: "Morning",
                 academicYear: "2026-2027",
+                monthlyFee: 4000,
+                admissionMonth: "August", // Mid-year admission demo
                 address: "Kottaram Road, West Hill, Calicut",
-                createdAt: new Date("2026-06-10")
+                createdAt: new Date("2026-08-10")
             },
             {
                 studentId: "PAD1029",
@@ -95,20 +106,25 @@ async function seedDatabase() {
                 class: "Class 5",
                 shift: "Evening",
                 academicYear: "2026-2027",
+                monthlyFee: 4000,
+                admissionMonth: "June",
                 address: "Nirmalyam, Medical College, Calicut",
                 createdAt: new Date("2026-06-12")
             }
         ];
 
         const studentCol = db.collection(collections.STUDENT_COLLECTION);
+        await ensureFeeIndexes(db);
+
         for (const s of students) {
             await studentCol.updateOne(
                 { studentId: s.studentId },
                 { $set: s },
                 { upsert: true }
             );
+            await generateStudentFees(db, s, s.admissionMonth);
         }
-        console.log(`✅ Seeded ${students.length} students across Morning, Afternoon, and Evening shifts.`);
+        console.log(`✅ Seeded ${students.length} students and generated their academic fee schedules.`);
 
         // -------------------------------------------------------------
         // 2. SEED PARENTS (WITH HASHED PASSWORDS)

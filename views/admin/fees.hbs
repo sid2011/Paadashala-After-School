@@ -1,0 +1,139 @@
+<div class="fees-page-container p-3 p-md-4">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div>
+            <h1 class="page-title m-0">Fees Management</h1>
+            <p class="text-muted m-0">വിദ്യാർത്ഥികളുടെ ഫീസ് വിവരങ്ങളും പേയ്‌മെന്റ് സ്റ്റാറ്റസും</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="/admin/students" class="btn btn-primary d-flex align-items-center gap-2">
+                <i class="bi bi-people-fill"></i>
+                <span>Manage Students & Fees</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- SUMMARY CARDS -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm p-3 rounded-4 bg-white">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-3 p-3 bg-primary-subtle text-primary fs-3">
+                        <i class="bi bi-mortarboard-fill"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small fw-semibold">Configured Students</div>
+                        <h3 class="fw-bold m-0 text-dark">{{studentsWithFeeCount}} / {{totalStudents}}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm p-3 rounded-4 bg-white">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-3 p-3 bg-success-subtle text-success fs-3">
+                        <i class="bi bi-cash-stack"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small fw-semibold">Total Collected</div>
+                        <h3 class="fw-bold m-0 text-success">₹{{formatCurrency totalCollected}}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm p-3 rounded-4 bg-white">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-3 p-3 bg-warning-subtle text-warning fs-3">
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small fw-semibold">Total Outstanding</div>
+                        <h3 class="fw-bold m-0 text-warning">₹{{formatCurrency totalPending}}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm p-3 rounded-4 bg-white">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-3 p-3 bg-info-subtle text-info fs-3">
+                        <i class="bi bi-receipt"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small fw-semibold">Paid Transactions</div>
+                        <h3 class="fw-bold m-0 text-info">{{transactions.length}}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RECENT TRANSACTIONS TABLE -->
+    <div class="dash-card mb-4">
+        <div class="dash-card-header d-flex justify-content-between align-items-center">
+            <h3 class="dash-card-title">
+                <i class="bi bi-clock-history text-primary me-2"></i> Recent Payment Transactions
+            </h3>
+            <span class="text-muted small">Total: {{transactions.length}}</span>
+        </div>
+        <div class="dash-card-body p-0">
+            <div class="table-responsive">
+                <table class="table align-middle table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Receipt No</th>
+                            <th>Date</th>
+                            <th>Student</th>
+                            <th>Parent Contact</th>
+                            <th>Covered Months</th>
+                            <th>Amount</th>
+                            <th>Razorpay Ref</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#if transactions.length}}
+                            {{#each transactions}}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-primary-subtle text-primary font-monospace">{{this.receiptNumber}}</span>
+                                    </td>
+                                    <td>{{formatDate this.paidAt}}</td>
+                                    <td>
+                                        <div class="fw-bold text-dark">{{this.studentName}}</div>
+                                        <small class="text-muted font-monospace">{{this.studentId}}</small>
+                                    </td>
+                                    <td>{{this.parentPhone}}</td>
+                                    <td>
+                                        <small class="fw-semibold text-secondary">
+                                            {{#each this.coveredMonths}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}
+                                        </small>
+                                    </td>
+                                    <td class="fw-bold text-success font-monospace">₹{{formatCurrency this.amount}}</td>
+                                    <td><small class="text-muted font-monospace">{{this.razorpayPaymentId}}</small></td>
+                                    <td>
+                                        <a href="/fees/receipt/{{this._id}}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                            <i class="bi bi-receipt me-1"></i> Receipt
+                                        </a>
+                                    </td>
+                                </tr>
+                            {{/each}}
+                        {{else}}
+                            <tr>
+                                <td colspan="8" class="text-center py-4 text-muted">
+                                    പേയ്‌മെന്റ് ട്രാൻസാക്ഷനുകൾ ഒന്നും ഇതുവരെ ലഭ്യമായിട്ടില്ല.
+                                </td>
+                            </tr>
+                        {{/if}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>

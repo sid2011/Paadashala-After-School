@@ -6,6 +6,7 @@
 
 var app = require('../app');
 var db = require('../config/connections');
+const { ensureFeeIndexes } = require('../helpers/fee-helper');
 var debug = require('debug')('paadashala-after-school:server');
 var http = require('http');
 var port = normalizePort(process.env.PORT || '3000');
@@ -21,7 +22,12 @@ var server = http.createServer(app);
  * Listen on provided port, on all network interfaces.
  */
 db.connect()
-  .then(() => {
+  .then(async () => {
+    try {
+      await ensureFeeIndexes(db.get());
+    } catch (e) {
+      console.error("Index init notice:", e.message);
+    }
     server.listen(port);
     server.on('error', onError);
     server.on('listening', onListening);

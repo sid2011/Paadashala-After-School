@@ -1,8 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
+const { ObjectId } = require('mongodb');
 const db = require('../config/connections');
 const collections = require('../config/collections');
+const {
+  ACADEMIC_MONTHS,
+  generateStudentFees,
+  getStudentFeeSummary
+} = require('../helpers/fee-helper');
+const {
+  getCredentials,
+  createRazorpayOrder,
+  verifyPaymentSignature,
+  verifyWebhookSignature,
+  generateReceiptNumber
+} = require('../helpers/razorpay-helper');
 
 // Authentication Middleware for Parents
 function requireParentAuth(req, res, next) {
@@ -366,13 +379,423 @@ router.get('/technical-support', requireParentAuth, async (req, res) => {
 });
 
 // ---------------------------------------------
-// 7. TIMETABLE & FEES PLACEHOLDERS
+// 7. FEES MANAGEMENT & RAZORPAY PAYMENT ROUTES
 // ---------------------------------------------
+
+// GET /fees (Parent Fee Dashboard)
 router.get('/fees', requireParentAuth, async (req, res) => {
-    const { student } = await getStudentContext(req);
-    res.render('user/fees', { student });
+    try {
+        const { student, allStudents } = await getStudentContext(req);
+
+        if (!student) {
+            return res.redirect('/');
+        }
+
+        // Auto-generate academic fee records if student has configured monthlyFee and records missing
+        if (student.monthlyFee && student.monthlyFee > 0 && db.get()) {
+            await generateStudentFees(db.get(), student, student.admissionMonth || 'June');
+        }
+
+        const summary = await getStudentFeeSummary(db.get(), student.studentId, student.academicYear);
+
+        let payments = [];
+        try {
+            if (db.get()) {
+                payments = await db.get()
+                    .collection(collections.PAYMENT_COLLECTION)
+                    .find({ studentId: student.studentId, status: 'successful' })
+                    .sort({ createdAt: -1 })
+                    .toArray();
+            }
+        } catch (e) {
+            console.log("Payments lookup notice:", e.message);
+        }
+
+        const { keyId } = getCredentials();
+        const razorpayKeyId = keyId || 'rzp_test_placeholder';
+
+        res.render('user/fees', {
+            student,
+            allStudents,
+            records: summary.records,
+            totalAcademicFees: summary.totalAcademicFees,
+            totalPaid: summary.totalPaid,
+            totalOutstanding: summary.totalOutstanding,
+            paidCount: summary.paidCount,
+            pendingCount: summary.pendingCount,
+            upcomingCount: summary.upcomingCount,
+            payments,
+            razorpayKeyId,
+            hasFeesConfigured: summary.records.length > 0
+        });
+    } catch (err) {
+        console.error("Fees dashboard route error:", err);
+        res.redirect('/');
+    }
 });
 
+// POST /fees/create-order (Initiate payment for single, multiple, or full balance)
+router.post('/fees/create-order', requireParentAuth, async (req, res) => {
+    try {
+        const { student, allStudents } = await getStudentContext(req);
+        if (!student) {
+            return res.status(404).json({ success: false, error: 'Student record not found.' });
+        }
+
+        const { feeIds, fullBalance } = req.body;
+        const feeCol = db.get().collection(collections.FEE_COLLECTION);
+
+        let eligibleFees = [];
+
+        if (fullBalance) {
+            // Pay entire outstanding balance
+            eligibleFees = await feeCol.find({
+                studentId: student.studentId,
+                academicYear: student.academicYear,
+                status: { $in: ['pending', 'upcoming'] }
+            }).sort({ order: 1 }).toArray();
+        } else if (Array.isArray(feeIds) && feeIds.length > 0) {
+            // Pay selected month(s)
+            const objectIds = feeIds.map(id => {
+                try {
+                    return new ObjectId(id);
+                } catch (e) {
+                    return null;
+                }
+            }).filter(Boolean);
+
+            if (objectIds.length === 0) {
+                return res.status(400).json({ success: false, error: 'Invalid fee identifiers provided.' });
+            }
+
+            const requestedFees = await feeCol.find({
+                _id: { $in: objectIds }
+            }).sort({ order: 1 }).toArray();
+
+            // Strict security check: every record must belong to this authorized student
+            for (const fee of requestedFees) {
+                if (fee.studentId !== student.studentId) {
+                    return res.status(403).json({
+                        success: false,
+                        error: 'Unauthorized access: You can only pay fees for your authorized student.'
+                    });
+                }
+                if (fee.status === 'paid') {
+                    return res.status(400).json({
+                        success: false,
+                        error: `The fee for ${fee.month} has already been paid.`
+                    });
+                }
+            }
+
+            eligibleFees = requestedFees;
+        } else {
+            return res.status(400).json({ success: false, error: 'Please select at least one fee month to pay.' });
+        }
+
+        if (eligibleFees.length === 0) {
+            return res.status(400).json({ success: false, error: 'No eligible pending fees found for payment.' });
+        }
+
+        // Authoritative server-side calculation of total amount
+        const totalAmount = eligibleFees.reduce((sum, f) => sum + (Number(f.amount) || 0), 0);
+        if (totalAmount <= 0) {
+            return res.status(400).json({ success: false, error: 'Invalid payable amount calculated.' });
+        }
+
+        const paymentCol = db.get().collection(collections.PAYMENT_COLLECTION);
+        const paymentRecord = {
+            studentId: student.studentId,
+            studentName: student.name,
+            parentPhone: req.session.parentPhone || student.parentNo,
+            parentName: student.parentName,
+            academicYear: student.academicYear,
+            feeIds: eligibleFees.map(f => f._id),
+            coveredMonths: eligibleFees.map(f => f.month),
+            amount: totalAmount,
+            currency: 'INR',
+            status: 'created',
+            createdAt: new Date()
+        };
+
+        const insertResult = await paymentCol.insertOne(paymentRecord);
+        paymentRecord._id = insertResult.insertedId;
+
+        // Create Razorpay Order
+        const rzpOrder = await createRazorpayOrder({
+            amountInRupees: totalAmount,
+            receipt: paymentRecord._id.toString(),
+            notes: {
+                studentId: student.studentId,
+                paymentRecordId: paymentRecord._id.toString()
+            }
+        });
+
+        await paymentCol.updateOne(
+            { _id: paymentRecord._id },
+            { $set: { razorpayOrderId: rzpOrder.id } }
+        );
+
+        const { keyId } = getCredentials();
+
+        return res.json({
+            success: true,
+            orderId: rzpOrder.id,
+            amount: rzpOrder.amount, // in paise
+            amountInRupees: totalAmount,
+            currency: 'INR',
+            keyId: keyId,
+            paymentRecordId: paymentRecord._id.toString(),
+            studentName: student.name,
+            studentId: student.studentId,
+            parentPhone: student.parentNo,
+            parentName: student.parentName,
+            coveredMonths: paymentRecord.coveredMonths
+        });
+    } catch (err) {
+        console.error("Create Razorpay order error:", err);
+        return res.status(500).json({ success: false, error: 'Failed to initiate payment. Please try again.' });
+    }
+});
+
+// POST /fees/verify-payment (Verify checkout signature & confirm payment)
+router.post('/fees/verify-payment', requireParentAuth, async (req, res) => {
+    try {
+        const {
+            razorpay_order_id,
+            razorpay_payment_id,
+            razorpay_signature,
+            paymentRecordId
+        } = req.body;
+
+        if (!paymentRecordId || !razorpay_order_id || !razorpay_payment_id) {
+            return res.status(400).json({ success: false, error: 'Incomplete payment response received.' });
+        }
+
+        const paymentCol = db.get().collection(collections.PAYMENT_COLLECTION);
+        let objectId = null;
+        try {
+            objectId = new ObjectId(paymentRecordId);
+        } catch (e) {
+            return res.status(400).json({ success: false, error: 'Invalid payment record reference.' });
+        }
+
+        const paymentRecord = await paymentCol.findOne({ _id: objectId });
+        if (!paymentRecord) {
+            return res.status(404).json({ success: false, error: 'Payment transaction record not found.' });
+        }
+
+        // Authorization check: student must be authorized for this parent
+        const { student, allStudents } = await getStudentContext(req);
+        const authorized = allStudents.some(s => s.studentId === paymentRecord.studentId);
+        if (!authorized) {
+            return res.status(403).json({ success: false, error: 'Unauthorized access to transaction.' });
+        }
+
+        // Idempotency: if already successful, return the existing receipt
+        if (paymentRecord.status === 'successful') {
+            return res.json({
+                success: true,
+                alreadyProcessed: true,
+                receiptId: paymentRecord._id.toString(),
+                receiptNumber: paymentRecord.receiptNumber
+            });
+        }
+
+        // Verify cryptographic signature
+        const isValid = verifyPaymentSignature(
+            razorpay_order_id,
+            razorpay_payment_id,
+            razorpay_signature
+        );
+
+        if (!isValid) {
+            await paymentCol.updateOne(
+                { _id: paymentRecord._id },
+                {
+                    $set: {
+                        status: 'failed',
+                        failureReason: 'Cryptographic signature mismatch',
+                        updatedAt: new Date()
+                    }
+                }
+            );
+            return res.status(400).json({
+                success: false,
+                error: 'Payment signature verification failed. The transaction could not be verified.'
+            });
+        }
+
+        // Generate unique receipt and update records atomically
+        const receiptNumber = generateReceiptNumber();
+        const now = new Date();
+
+        await paymentCol.updateOne(
+            { _id: paymentRecord._id, status: { $ne: 'successful' } },
+            {
+                $set: {
+                    status: 'successful',
+                    razorpayPaymentId: razorpay_payment_id,
+                    razorpaySignature: razorpay_signature,
+                    receiptNumber: receiptNumber,
+                    paidAt: now,
+                    updatedAt: now
+                }
+            }
+        );
+
+        const feeCol = db.get().collection(collections.FEE_COLLECTION);
+        await feeCol.updateMany(
+            { _id: { $in: paymentRecord.feeIds } },
+            {
+                $set: {
+                    status: 'paid',
+                    paidAt: now,
+                    paymentId: paymentRecord._id,
+                    receiptNumber: receiptNumber,
+                    razorpayPaymentId: razorpay_payment_id,
+                    updatedAt: now
+                }
+            }
+        );
+
+        return res.json({
+            success: true,
+            receiptId: paymentRecord._id.toString(),
+            receiptNumber: receiptNumber,
+            amount: paymentRecord.amount,
+            coveredMonths: paymentRecord.coveredMonths
+        });
+    } catch (err) {
+        console.error("Verify payment error:", err);
+        return res.status(500).json({ success: false, error: 'Internal server error verifying payment.' });
+    }
+});
+
+// POST /fees/webhook (Razorpay Server Webhook with Raw Body Verification)
+router.post('/fees/webhook', async (req, res) => {
+    try {
+        const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+        const webhookSignature = req.headers['x-razorpay-signature'];
+
+        // If a webhook secret is configured, strictly verify signature
+        if (webhookSecret) {
+            const rawBody = req.rawBody || JSON.stringify(req.body);
+            const isValid = verifyWebhookSignature(rawBody, webhookSignature, webhookSecret);
+            if (!isValid) {
+                console.error("Razorpay webhook signature verification failed.");
+                return res.status(400).json({ error: 'Invalid webhook signature' });
+            }
+        }
+
+        const event = req.body.event;
+        const payload = req.body.payload;
+
+        if (event === 'payment.captured' || event === 'order.paid') {
+            const orderId = payload?.payment?.entity?.order_id || payload?.order?.entity?.id;
+            const paymentId = payload?.payment?.entity?.id;
+
+            if (orderId && db.get()) {
+                const paymentCol = db.get().collection(collections.PAYMENT_COLLECTION);
+                const paymentRecord = await paymentCol.findOne({ razorpayOrderId: orderId });
+
+                if (paymentRecord && paymentRecord.status !== 'successful') {
+                    const receiptNumber = generateReceiptNumber();
+                    const now = new Date();
+
+                    await paymentCol.updateOne(
+                        { _id: paymentRecord._id, status: { $ne: 'successful' } },
+                        {
+                            $set: {
+                                status: 'successful',
+                                razorpayPaymentId: paymentId || paymentRecord.razorpayPaymentId,
+                                receiptNumber: receiptNumber,
+                                paidAt: now,
+                                updatedAt: now,
+                                reconciledVia: 'webhook'
+                            }
+                        }
+                    );
+
+                    const feeCol = db.get().collection(collections.FEE_COLLECTION);
+                    await feeCol.updateMany(
+                        { _id: { $in: paymentRecord.feeIds } },
+                        {
+                            $set: {
+                                status: 'paid',
+                                paidAt: now,
+                                paymentId: paymentRecord._id,
+                                receiptNumber: receiptNumber,
+                                razorpayPaymentId: paymentId || paymentRecord.razorpayPaymentId,
+                                updatedAt: now
+                            }
+                        }
+                    );
+                }
+            }
+        }
+
+        return res.status(200).json({ status: 'ok' });
+    } catch (err) {
+        console.error("Webhook processing error:", err);
+        return res.status(500).json({ error: 'Webhook processing error' });
+    }
+});
+
+// GET /fees/receipt/:id (View Printable Receipt)
+router.get('/fees/receipt/:id', async (req, res) => {
+    try {
+        const paymentId = req.params.id;
+        let objectId = null;
+        try {
+            objectId = new ObjectId(paymentId);
+        } catch (e) {
+            return res.redirect('/fees');
+        }
+
+        const payment = await db.get().collection(collections.PAYMENT_COLLECTION).findOne({ _id: objectId });
+        if (!payment) {
+            return res.status(404).render('error', { message: 'Receipt Not Found' });
+        }
+
+        // Authorization check: must be either authenticated parent of the student or logged-in admin
+        const isAdmin = req.session && req.session.isAdmin;
+        const isParent = req.session && req.session.isParent;
+
+        if (!isAdmin && !isParent) {
+            return res.redirect('/login');
+        }
+
+        if (isParent && !isAdmin) {
+            const { student, allStudents } = await getStudentContext(req);
+            const isAuthorizedStudent = allStudents.some(s => s.studentId === payment.studentId);
+            if (!isAuthorizedStudent) {
+                return res.status(403).render('error', { message: 'Unauthorized: You can only view receipts for your student.' });
+            }
+        }
+
+        const student = await db.get().collection(collections.STUDENT_COLLECTION).findOne({ studentId: payment.studentId });
+
+        // Fetch detailed fee records
+        const feeRecords = await db.get().collection(collections.FEE_COLLECTION).find({
+            _id: { $in: payment.feeIds }
+        }).sort({ order: 1 }).toArray();
+
+        res.render('user/receipt', {
+            layout: 'layout',
+            payment,
+            student: student || { name: payment.studentName, studentId: payment.studentId },
+            feeRecords
+        });
+    } catch (err) {
+        console.error("Receipt error:", err);
+        res.redirect('/fees');
+    }
+});
+
+// ---------------------------------------------
+// 8. TIMETABLE
+// ---------------------------------------------
 router.get('/timetable', requireParentAuth, async (req, res) => {
     const { student } = await getStudentContext(req);
     res.render('user/timetable', { student });

@@ -1,0 +1,193 @@
+<main class="app" style="max-width: 42rem;">
+
+  <!-- TOP NAVIGATION (HIDDEN ON PRINT) -->
+  <div class="no-print" style="padding: 1.25rem 1rem 0; display: flex; justify-content: space-between; align-items: center;">
+    <a href="/fees" class="back-btn" style="background: #e2e8f0; color: #1e293b;">
+      <i class="bi bi-chevron-left"></i> Back to Fees
+    </a>
+    <button
+      onclick="window.print()"
+      style="background: #0284c7; color: #fff; border: none; border-radius: 9999px; padding: 0.45rem 1rem; font-size: 0.85rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25);">
+      <i class="bi bi-printer-fill"></i> Print / Download
+    </button>
+  </div>
+
+  <section class="section" style="padding: 1rem 1rem 3rem;">
+
+    <!-- RECEIPT CARD -->
+    <div
+      class="receipt-card"
+      style="background: #ffffff; border-radius: 1.5rem; border: 1.5px solid #cbd5e1; box-shadow: 0 10px 30px rgba(0,0,0,0.06); padding: 2rem 1.75rem; position: relative; overflow: hidden;">
+
+      <!-- WATERMARK BADGE -->
+      <div style="position: absolute; right: 1.5rem; top: 1.5rem; opacity: 0.12; font-size: 6rem; pointer-events: none; color: #16a34a;">
+        <i class="bi bi-patch-check-fill"></i>
+      </div>
+
+      <!-- HEADER: INSTITUTION INFO -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0f172a; padding-bottom: 1.25rem; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h2 style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin: 0; line-height: 1.2;">
+            Paadashala After School
+          </h2>
+          <p style="font-size: 0.85rem; color: #475569; margin: 0.2rem 0 0;">
+            Centre for Academic Excellence & Comprehensive Coaching
+          </p>
+          <p style="font-size: 0.75rem; color: #64748b; margin: 0.15rem 0 0;">
+            Kozhikode, Kerala • Contact: support@paadashala.in
+          </p>
+        </div>
+
+        <div style="text-align: right;">
+          <span style="display: inline-block; background: #dcfce7; color: #15803d; border: 1px solid #86efac; font-weight: 800; font-size: 0.8rem; padding: 0.3rem 0.75rem; border-radius: 9999px; text-transform: uppercase;">
+            <i class="bi bi-check-circle-fill me-1"></i> Fee Receipt (Paid)
+          </span>
+          <div style="font-size: 0.8rem; color: #64748b; margin-top: 0.4rem; font-family: monospace;">
+            Date: <strong>{{formatDate payment.paidAt}}</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- RECEIPT & TRANSACTION META -->
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; background: #f8fafc; border-radius: 1rem; padding: 1rem; margin-bottom: 1.5rem; border: 1px solid #e2e8f0;">
+        <div>
+          <span style="font-size: 0.7rem; color: #64748b; font-weight: 700; text-transform: uppercase; display: block;">Receipt Number</span>
+          <strong style="font-size: 1rem; color: #0284c7; font-family: monospace;">{{payment.receiptNumber}}</strong>
+        </div>
+
+        <div>
+          <span style="font-size: 0.7rem; color: #64748b; font-weight: 700; text-transform: uppercase; display: block;">Payment Status</span>
+          <strong style="font-size: 0.95rem; color: #15803d;">Successful (Confirmed)</strong>
+        </div>
+
+        <div>
+          <span style="font-size: 0.7rem; color: #64748b; font-weight: 700; text-transform: uppercase; display: block;">Razorpay Payment ID</span>
+          <span style="font-size: 0.85rem; color: #334155; font-family: monospace;">{{payment.razorpayPaymentId}}</span>
+        </div>
+
+        <div>
+          <span style="font-size: 0.7rem; color: #64748b; font-weight: 700; text-transform: uppercase; display: block;">Razorpay Order ID</span>
+          <span style="font-size: 0.85rem; color: #334155; font-family: monospace;">{{payment.razorpayOrderId}}</span>
+        </div>
+      </div>
+
+      <!-- STUDENT & PARENT PARTICULARS -->
+      <div style="margin-bottom: 1.5rem;">
+        <h4 style="font-size: 0.85rem; color: #64748b; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; margin-bottom: 0.65rem;">
+          Student Particulars
+        </h4>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; font-size: 0.9rem;">
+          <div>
+            <span style="color: #64748b;">Student Name:</span>
+            <strong style="color: #0f172a; margin-left: 0.35rem;">{{payment.studentName}}</strong>
+          </div>
+          <div>
+            <span style="color: #64748b;">Student ID:</span>
+            <strong style="color: #0f172a; font-family: monospace; margin-left: 0.35rem;">{{payment.studentId}}</strong>
+          </div>
+          <div>
+            <span style="color: #64748b;">Class & Shift:</span>
+            <strong style="color: #0f172a; margin-left: 0.35rem;">{{student.class}} ({{student.shift}})</strong>
+          </div>
+          <div>
+            <span style="color: #64748b;">Academic Year:</span>
+            <strong style="color: #0f172a; margin-left: 0.35rem;">{{payment.academicYear}}</strong>
+          </div>
+          <div>
+            <span style="color: #64748b;">Parent / Payer:</span>
+            <strong style="color: #0f172a; margin-left: 0.35rem;">{{payment.parentName}}</strong>
+          </div>
+          <div>
+            <span style="color: #64748b;">Contact Phone:</span>
+            <strong style="color: #0f172a; margin-left: 0.35rem;">{{payment.parentPhone}}</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- ITEMIZED TABLE OF COVERED MONTHS -->
+      <div style="margin-bottom: 1.5rem;">
+        <h4 style="font-size: 0.85rem; color: #64748b; text-transform: uppercase; font-weight: 800; letter-spacing: 0.05em; margin-bottom: 0.65rem;">
+          Fee Breakdown & Covered Months
+        </h4>
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+          <thead>
+            <tr style="background: #f1f5f9; border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1;">
+              <th style="padding: 0.6rem 0.75rem; text-align: left; color: #475569; font-weight: 700;">#</th>
+              <th style="padding: 0.6rem 0.75rem; text-align: left; color: #475569; font-weight: 700;">Academic Period</th>
+              <th style="padding: 0.6rem 0.75rem; text-align: left; color: #475569; font-weight: 700;">Calendar Year</th>
+              <th style="padding: 0.6rem 0.75rem; text-align: right; color: #475569; font-weight: 700;">Amount (₹)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#if feeRecords.length}}
+              {{#each feeRecords}}
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                  <td style="padding: 0.6rem 0.75rem; color: #64748b;">{{inc @index}}</td>
+                  <td style="padding: 0.6rem 0.75rem; font-weight: 700; color: #0f172a;">{{this.month}} Fee</td>
+                  <td style="padding: 0.6rem 0.75rem; color: #475569;">{{this.year}}</td>
+                  <td style="padding: 0.6rem 0.75rem; text-align: right; font-weight: 700; font-family: monospace; color: #0f172a;">₹{{formatCurrency this.amount}}</td>
+                </tr>
+              {{/each}}
+            {{else}}
+              {{#each payment.coveredMonths}}
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                  <td style="padding: 0.6rem 0.75rem; color: #64748b;">{{inc @index}}</td>
+                  <td style="padding: 0.6rem 0.75rem; font-weight: 700; color: #0f172a;">{{this}} Fee</td>
+                  <td style="padding: 0.6rem 0.75rem; color: #475569;">{{../payment.academicYear}}</td>
+                  <td style="padding: 0.6rem 0.75rem; text-align: right; font-weight: 700; font-family: monospace; color: #0f172a;">Settled</td>
+                </tr>
+              {{/each}}
+            {{/if}}
+          </tbody>
+          <tfoot>
+            <tr style="border-top: 2px solid #0f172a; font-size: 1.05rem;">
+              <td colspan="3" style="padding: 0.75rem; text-align: right; font-weight: 800; color: #0f172a;">
+                Total Amount Paid:
+              </td>
+              <td style="padding: 0.75rem; text-align: right; font-weight: 800; font-family: monospace; color: #047857;">
+                ₹{{formatCurrency payment.amount}}
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- FOOTER NOTE & SIGNATURE -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 2rem; padding-top: 1.25rem; border-top: 1px dashed #cbd5e1; font-size: 0.8rem; color: #64748b;">
+        <div style="max-width: 320px;">
+          <p style="margin: 0; line-height: 1.4;">
+            This is a computer-generated official receipt. No physical signature is required. Payment confirmed securely through Razorpay.
+          </p>
+        </div>
+
+        <div style="text-align: center;">
+          <div style="font-weight: 800; color: #0f172a; margin-bottom: 0.2rem;">PAADASHALA AFTER SCHOOL</div>
+          <div style="font-size: 0.7rem; color: #64748b;">Accounts & Administration</div>
+        </div>
+      </div>
+
+    </div>
+
+  </section>
+
+</main>
+
+<style>
+@media print {
+  body {
+    background: #ffffff !important;
+  }
+  .app {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .receipt-card {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+}
+</style>

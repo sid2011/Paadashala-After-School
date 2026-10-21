@@ -18,7 +18,11 @@ app.set("view engine", "hbs");
 hbs.registerPartials(path.join(__dirname, "views/partials"));
 
 app.use(logger("dev"));
-app.use(express.json());
+app.use(express.json({
+  verify: function (req, res, buf) {
+    req.rawBody = buf;
+  }
+}));
 app.use(express.urlencoded({ extended: true }));
 
 app.use(session({
@@ -55,6 +59,16 @@ app.engine(
         } catch (e) {
           return dateStr;
         }
+      },
+      formatCurrency: function (amount) {
+        const num = Number(amount) || 0;
+        return num.toLocaleString('en-IN');
+      },
+      or: function (a, b) {
+        return a || b;
+      },
+      json: function (context) {
+        return JSON.stringify(context);
       }
     },
   }),
