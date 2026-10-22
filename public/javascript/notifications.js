@@ -50,14 +50,22 @@ async function subscribeUserToPush(registration, vapidPublicKey) {
     }
 
     // Send subscription to server
-    await fetch('/api/push-subscribe', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(subscription)
-    });
+    // Send subscription to server
+const response = await fetch('/api/push-subscribe', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(subscription)
+});
 
-    console.log('Push notification subscription synchronized with server.');
-  } catch (err) {
+console.log('Subscription endpoint:', response.status);
+console.log('Server response:', await response.clone().text());
+
+if (!response.ok) {
+  throw new Error(`Subscription API failed: ${response.status}`);
+}
+
+console.log('Push subscription synchronized with server.');
+    } catch (err) {
     console.warn('Failed to subscribe user to push:', err);
   }
 }
